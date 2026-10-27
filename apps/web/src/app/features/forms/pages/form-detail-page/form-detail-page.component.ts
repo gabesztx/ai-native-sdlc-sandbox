@@ -1,8 +1,8 @@
 import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, computed, inject, input, linkedSignal, numberAttribute, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
-import { EMPTY, catchError, finalize, of, switchMap } from 'rxjs';
+import { EMPTY, Observable, catchError, finalize, map, of, startWith, switchMap, tap } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel } from 'primeng/accordion';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
@@ -19,6 +19,12 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { StatusTagComponent } from '../../../../shared/components/status-tag/status-tag.component';
 import { ConfirmDeleteService } from '../../services/confirm-delete.service';
 import { FormsService } from '../../services/forms.service';
+
+interface FormPage {
+  detail: FormDetail | null;
+  responses: FormResponse[];
+  error: string;
+}
 
 @Component({
   selector: 'form-detail-page',
@@ -52,26 +58,29 @@ export class FormDetailPageComponent {
   private messages = inject(MessageService);
   private confirmDelete = inject(ConfirmDeleteService);
 
-  public id = input.required<string>();
-  public detail = signal<FormDetail | null>(null);
-  public responses = signal<FormResponse[]>([]);
-  public error = signal('');
+  public id = input.required({ transform: numberAttribute });
+  private loadedPage = toSignal(
+    toObservable(this.id).pipe(
+      switchMap((id) =>
+        this.formsService.get(id).pipe(
+          switchMap((detail) => this.withResponses(detail)),
+          catchError((e: unknown) => of(failedPage(e))),
+        ),
+      ),
+    ),
+  );
+  private page = linkedSignal(() => this.loadedPage());
+  private actionError = signal('');
+  public detail = computed(() => this.page()?.detail ?? null);
+  public responses = computed(() => this.page()?.responses ?? []);
+  public error = computed(() => this.actionError() || (this.page()?.error ?? ''));
   public sending = signal(false);
   public deleting = signal(false);
-  public loading = computed(() => this.detail() === null && this.error() === '');
+  public loading = computed(() => this.page() === undefined);
   public progress = computed(() => {
     const form = this.detail();
     return form && form.recipientCount > 0 ? Math.round((form.submittedCount / form.recipientCount) * 100) : 0;
   });
-
-  public constructor() {
-    toObservable(this.id)
-      .pipe(
-        switchMap((id) => this.formsService.get(Number(id)).pipe(catchError((e: unknown) => this.fail(e)))),
-        takeUntilDestroyed(),
-      )
-      .subscribe((detail) => this.show(detail));
-  }
 
   public questionText(questionId: number): string {
     return this.detail()?.questions.find((question) => question.id === questionId)?.text ?? '';
@@ -81,19 +90,18 @@ export class FormDetailPageComponent {
     if (this.sending()) {
       return;
     }
-    this.error.set('');
+    this.actionError.set('');
     this.sending.set(true);
     this.formsService
-      .send(Number(this.id()))
+      .send(this.id())
       .pipe(
         catchError((e: unknown) => this.fail(e)),
         finalize(() => this.sending.set(false)),
+        tap(() => this.messages.add({ severity: 'success', summary: 'Űrlap kiküldve' })),
+        switchMap((detail) => this.withResponses(detail)),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((detail) => {
-        this.messages.add({ severity: 'success', summary: 'Űrlap kiküldve' });
-        this.show(detail);
-      });
+      .subscribe((page) => this.page.set(page));
   }
 
   public onDelete(): void {
@@ -106,7 +114,7 @@ export class FormDetailPageComponent {
   private delete(): void {
     this.deleting.set(true);
     this.formsService
-      .delete(Number(this.id()))
+      .delete(this.id())
       .pipe(
         catchError((e: unknown) => this.fail(e)),
         finalize(() => this.deleting.set(false)),
@@ -118,19 +126,28 @@ export class FormDetailPageComponent {
       });
   }
 
-  private show(detail: FormDetail): void {
-    this.detail.set(detail);
-    const responses$ =
-      detail.status === 'SENT'
-        ? this.formsService.responses(detail.id).pipe(catchError((e: unknown) => this.fail(e)))
-        : of([]);
-    responses$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((responses) => this.responses.set(responses));
+  private withResponses(detail: FormDetail): Observable<FormPage> {
+    const loaded: FormPage = { detail, responses: [], error: '' };
+    if (detail.status !== 'SENT') {
+      return of(loaded);
+    }
+    return this.formsService.responses(detail.id).pipe(
+      map((responses) => ({ ...loaded, responses })),
+      catchError((e: unknown) => of({ ...loaded, error: errorMessage(e) })),
+      startWith(loaded),
+    );
   }
 
   private fail(error: unknown) {
-    this.error.set(problemOf(error).detail ?? 'Váratlan hiba történt');
+    this.actionError.set(errorMessage(error));
     return EMPTY;
   }
+}
+
+function failedPage(error: unknown): FormPage {
+  return { detail: null, responses: [], error: errorMessage(error) };
+}
+
+function errorMessage(error: unknown): string {
+  return problemOf(error).detail ?? 'Váratlan hiba történt';
 }
