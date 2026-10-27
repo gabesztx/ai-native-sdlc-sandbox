@@ -1,8 +1,10 @@
-# Feature Request Board — AI-native SDLC sandbox
+# HUGO Feature Request Board — AI-native SDLC sandbox
 
-Tanuló sandbox, amely az Anthropic AI-Native SDLC Playbookját követi. A termék egy kis
-Feature Request Board (kérések beküldése, szavazás, státusz követése); a valódi téma a
-körülötte lévő agent-munkafolyamat: intent → spec → plan → build → review.
+Tanuló sandbox, amely az Anthropic AI-Native SDLC Playbookját követi. A termék a
+HUGO Feature Request Board: a HUGO csapat tagjai egymást értékelik az admin által
+összeállított űrlapokon, és egy Jira csapat-dashboardon látják a fejlesztés állapotát
+(részletek: `docs/changes/`). A valódi téma a körülötte lévő agent-munkafolyamat:
+intent → spec → plan → build → review.
 
 ## Állapot
 
@@ -76,7 +78,7 @@ hogy kihagyod a korábbi lépéseket.
 - API-változás a `spec.md`-ben kezdődik, utána jön a kód, majd az újragenerált
   `contracts/openapi.json`.
 - Sémaváltozás csak új Flyway migrációval (`V<n>__<leiras>.sql`).
-- Az API csomagolása feature szerint (`request/`, `vote/`), nem rétegenként.
+- Az API csomagolása feature szerint (pl. `form/`, `user/`, `dashboard/`), nem rétegenként.
 
 ## Konvenciók
 
