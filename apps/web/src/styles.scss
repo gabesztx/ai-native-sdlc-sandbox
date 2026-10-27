@@ -93,6 +93,10 @@
   .muted {
     color: var(--p-text-muted-color);
   }
+
+  .required-mark {
+    color: var(--p-red-500);
+  }
 }
 
 ::view-transition {

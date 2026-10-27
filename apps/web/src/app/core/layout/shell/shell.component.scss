@@ -24,19 +24,6 @@ $bottom-nav-height: 4rem;
   min-width: 0;
 }
 
-.brand-mark {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.6rem;
-  font-weight: 800;
-  color: var(--p-primary-contrast-color);
-  background: var(--p-primary-color);
-}
-
 .brand-text {
   display: flex;
   flex-direction: column;

@@ -42,11 +42,6 @@ legend {
   gap: 0.6rem;
 }
 
-.required,
-.field-error {
-  color: var(--p-red-500);
-}
-
 .submit-bar {
   padding-bottom: env(safe-area-inset-bottom);
 }
