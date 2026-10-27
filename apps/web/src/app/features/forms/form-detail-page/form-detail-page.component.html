@@ -1,66 +1,130 @@
 @if (error()) {
-  <p class="error" role="alert">{{ error() }}</p>
+  <p-message severity="error" class="error">{{ error() }}</p-message>
 }
-@if (detail(); as form) {
-  <div class="page-header">
-    <h1>{{ form.topic }}</h1>
-    <span class="status">{{ formStatusLabels[form.status] }}</span>
+
+@if (loading()) {
+  <div class="skeleton">
+    <p-skeleton width="60%" height="2rem" />
+    <p-skeleton width="30%" height="1rem" />
+    <p-skeleton height="8rem" />
   </div>
-  <p>Értékelt: <strong>{{ form.evaluatedMember.name }}</strong></p>
+}
 
-  @if (form.status === 'DRAFT') {
-    <div class="actions">
-      <a class="edit" [routerLink]="['/admin/forms', form.id, 'edit']">Szerkesztés</a>
-      <button type="button" class="send" (click)="onSend()">Kiküldés</button>
-      <button type="button" class="delete" (click)="onDelete()">Törlés</button>
-    </div>
-  }
-
-  <h2>Kérdések</h2>
-  <ol class="questions">
-    @for (question of form.questions; track question.id) {
-      <li>
-        {{ question.text }}
-        @if (question.type === 'SCALE') {
-          <span class="hint">({{ question.scaleMin }}–{{ question.scaleMax }})</span>
-        }
-        @if (question.required) {
-          <span class="hint">kötelező</span>
-        }
-      </li>
+@if (detail(); as form) {
+  <page-header [title]="form.topic" [subtitle]="'Értékelt: ' + form.evaluatedMember.name">
+    <status-tag pageHeaderTag class="status" [status]="form.status" />
+    @if (form.status === 'DRAFT') {
+      <a pButton class="edit" severity="secondary" [outlined]="true" [routerLink]="['/admin/forms', form.id, 'edit']">
+        <i pButtonIcon class="pi pi-pencil"></i>
+        <span pButtonLabel>Szerkesztés</span>
+      </a>
+      <button pButton type="button" class="send" [loading]="sending()" (click)="onSend()">
+        <i pButtonIcon class="pi pi-send"></i>
+        <span pButtonLabel>Kiküldés</span>
+      </button>
+      <button
+        pButton
+        type="button"
+        class="delete"
+        severity="danger"
+        [outlined]="true"
+        [loading]="deleting()"
+        (click)="onDelete()"
+      >
+        <i pButtonIcon class="pi pi-trash"></i>
+        <span pButtonLabel>Törlés</span>
+      </button>
     }
-  </ol>
+  </page-header>
 
-  @if (form.status === 'SENT') {
-    <h2>Címzettek ({{ form.submittedCount }} / {{ form.recipientCount }})</h2>
-    <ul class="recipients">
-      @for (recipient of form.recipients; track recipient.member.id) {
-        <li class="recipient">
-          <span class="name">{{ recipient.member.name }}</span>
-          <span class="recipient-status">{{ reviewStatusLabels[recipient.status] }}</span>
-          @if (recipient.submittedAt) {
-            <span class="time">{{ recipient.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
-          }
-        </li>
-      }
-    </ul>
+  <div class="sections">
+    @if (form.status === 'SENT') {
+      <p-card class="stagger-item">
+        <div class="progress">
+          <div class="progress-head">
+            <h2>Kitöltöttség</h2>
+            <span class="progress-label">{{ form.submittedCount }} / {{ form.recipientCount }} beküldve</span>
+          </div>
+          <p-progressbar class="progress-bar" [value]="progress()" [showValue]="false" />
+        </div>
+      </p-card>
+    }
 
-    <h2>Beküldött válaszok</h2>
-    @for (response of responses(); track response.member.id) {
-      <section class="response">
-        <h3>
-          {{ response.member.name }}
-          <span class="time">{{ response.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
-        </h3>
-        <dl>
-          @for (answer of response.answers; track answer.questionId) {
-            <dt>{{ questionText(answer.questionId) }}</dt>
-            <dd class="answer">{{ answer.scaleValue ?? answer.textValue }}</dd>
+    <p-card class="stagger-item">
+      <div class="section">
+        <h2>Kérdések</h2>
+        <ol class="questions">
+          @for (question of form.questions; track question.id) {
+            <li class="question">
+              <span class="question-text">{{ question.text }}</span>
+              @if (question.type === 'SCALE') {
+                <span class="hint muted">({{ question.scaleMin }}–{{ question.scaleMax }})</span>
+              }
+              @if (question.required) {
+                <p-tag class="hint" severity="secondary" value="kötelező" />
+              }
+            </li>
           }
-        </dl>
+        </ol>
+      </div>
+    </p-card>
+
+    @if (form.status === 'SENT') {
+      <p-card class="stagger-item">
+        <div class="section">
+          <h2>Címzettek ({{ form.submittedCount }} / {{ form.recipientCount }})</h2>
+          <p-table [value]="form.recipients" dataKey="member.id">
+            <ng-template #header>
+              <tr>
+                <th scope="col">Név</th>
+                <th scope="col">Állapot</th>
+                <th scope="col">Beküldve</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-recipient>
+              <tr class="recipient">
+                <td class="name">{{ recipient.member.name }}</td>
+                <td class="recipient-status"><status-tag [status]="recipient.status" /></td>
+                <td class="time muted">
+                  @if (recipient.submittedAt) {
+                    {{ recipient.submittedAt | date: 'yyyy.MM.dd HH:mm' }}
+                  } @else {
+                    –
+                  }
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </p-card>
+
+      <section class="section stagger-item">
+        <h2>Beküldött válaszok</h2>
+        @if (responses().length > 0) {
+          <p-accordion [multiple]="true">
+            @for (response of responses(); track response.member.id) {
+              <p-accordion-panel class="response" [value]="response.member.id">
+                <p-accordion-header>
+                  <span class="response-header">
+                    <span class="response-name">{{ response.member.name }}</span>
+                    <span class="time muted">{{ response.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
+                  </span>
+                </p-accordion-header>
+                <p-accordion-content>
+                  <dl class="answers">
+                    @for (answer of response.answers; track answer.questionId) {
+                      <dt>{{ questionText(answer.questionId) }}</dt>
+                      <dd class="answer">{{ answer.scaleValue ?? answer.textValue }}</dd>
+                    }
+                  </dl>
+                </p-accordion-content>
+              </p-accordion-panel>
+            }
+          </p-accordion>
+        } @else {
+          <empty-state icon="pi pi-hourglass" message="Még senki nem küldte be." />
+        }
       </section>
-    } @empty {
-      <p>Még senki nem küldte be.</p>
     }
-  }
+  </div>
 }
