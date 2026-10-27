@@ -1,52 +1,52 @@
-# Review rules
+# Review szabályok
 
-Shared standard for every reviewer — human, `/review`, and the reviewer subagents.
-The goal is a short list a human can act on, not an exhaustive one.
+Közös mérce minden reviewernek — embernek, a `/review`-nak és a reviewer subagenteknek.
+A cél egy rövid lista, amin egy ember tud dolgozni, nem egy kimerítő felsorolás.
 
-## Severity
+## Súlyosság
 
-### Important — must be fixed before merge
+### Important — merge előtt javítani kell
 
-- Wrong behaviour: the code does not do what `spec.md` / `plan.md` says.
-- Scope drift: changes not covered by `plan.md`, or plan steps left undone.
-- Security: injection (SQL built by string concatenation, unsanitised HTML),
-  missing input validation, secrets or PII in code or logs.
-- Data: schema change without a new Flyway migration, or an edited existing migration.
-- Contract: API changed but `contracts/openapi.json` not regenerated, or a
-  hand-written client instead of the generated one.
-- Tests: new behaviour without a test, a test weakened or deleted to pass,
-  or a test that cannot fail.
-- `pnpm check` not passing.
+- Hibás viselkedés: a kód nem azt csinálja, amit a `spec.md` / `plan.md` mond.
+- Hatókör-eltérés: a `plan.md` által nem lefedett változás, vagy kihagyott plan-lépés.
+- Security: injection (stringből összefűzött SQL, szűretlen HTML), hiányzó
+  input-validáció, secret vagy személyes adat a kódban vagy a logban.
+- Adat: sémaváltozás új Flyway migráció nélkül, vagy meglévő migráció szerkesztése.
+- Szerződés: megváltozott API, de a `contracts/openapi.json` nincs újragenerálva, vagy
+  kézzel írt kliens a generált helyett.
+- Tesztek: új viselkedés teszt nélkül, átmenés kedvéért meggyengített vagy törölt teszt,
+  vagy olyan teszt, ami nem tud elbukni.
+- A `pnpm check` nem zöld.
 
-### Nit — optional, author decides
+### Nit — opcionális, a szerző dönt
 
-- Naming, readability, small duplication, comment wording.
-- Simpler alternative for code that is already correct.
+- Elnevezés, olvashatóság, kisebb duplikáció, komment megfogalmazása.
+- Egyszerűbb alternatíva egy már helyes kódra.
 
-At most **5 nits** per review. If there are more, keep the 5 most useful and give
-the total count.
+Reviewnként legfeljebb **5 nit**. Ha több van, a hasznosabb 5 marad, és add meg az
+összes darabszámát.
 
-## Do not report
+## Ne jelezd
 
-- Formatting or style the linter/formatter already enforces.
-- Personal preference with no concrete benefit.
-- Issues in code the change did not touch — unless the change makes them worse.
-- Speculative problems without a concrete failure scenario.
+- Formázás vagy stílus, amit a linter/formatter már kikényszerít.
+- Személyes ízlés konkrét haszon nélkül.
+- Hibák olyan kódban, amit a változás nem érintett — kivéve, ha a változás rontja őket.
+- Feltételezett problémák konkrét hibaeset nélkül.
 
-## Finding format
+## Találat formátuma
 
-One line per finding:
+Találatonként egy sor:
 
 ```
-[Important|Nit] path/to/file:line — what is wrong, and the concrete scenario where it fails.
+[Important|Nit] path/to/file:line — mi a hiba, és a konkrét eset, amikor elromlik.
 ```
 
-Every Important finding names a concrete failure scenario (input → wrong result).
-If you cannot name one, it is not Important.
+Minden Important találat megnevez egy konkrét hibaesetet (bemenet → hibás eredmény).
+Ha nem tudsz megnevezni ilyet, akkor nem Important.
 
-## Review output
+## Review kimenet
 
-1. Verdict: `APPROVE` (no Important findings) or `CHANGES REQUESTED`.
-2. Important findings, most severe first.
-3. Nits (max 5), then `N nits total`.
-4. What was checked: diff range, and which `spec.md` / `plan.md` was used.
+1. Verdikt: `APPROVE` (nincs Important találat) vagy `CHANGES REQUESTED`.
+2. Important találatok, a legsúlyosabb elöl.
+3. Nitek (max 5), utána `összesen N nit`.
+4. Mit néztél át: a diff tartománya, és melyik `spec.md` / `plan.md` alapján.
