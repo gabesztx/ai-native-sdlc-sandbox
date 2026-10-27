@@ -1,0 +1,19 @@
+<header class="shell-header">
+  <span class="brand">HUGO Feature Request Board</span>
+  <nav class="menu" aria-label="Fő navigáció">
+    @for (item of menu(); track item.path) {
+      <a
+        class="menu-item"
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        >{{ item.label }}</a
+      >
+    }
+  </nav>
+  <span class="user-name">{{ userName() }}</span>
+  <button type="button" class="logout" (click)="onLogout()">Kilépés</button>
+</header>
+<main class="shell-main">
+  <router-outlet />
+</main>
