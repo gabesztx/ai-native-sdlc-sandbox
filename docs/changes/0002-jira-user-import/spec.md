@@ -1,7 +1,7 @@
 # Spec: Felhasználólista lekérése a Jirából
 
 - **ID:** 0002-jira-user-import
-- **Státusz:** Draft
+- **Státusz:** Approved
 - **Intent:** [intent.md](intent.md)
 - **Dátum:** 2026-10-27
 
@@ -166,7 +166,7 @@ A Jira-hívásokat a tesztek egy helyettesítő (mock) Jira-szerverrel váltják
 
 ## Nyitott kérdések
 
-A spec a zárójelben lévő **feltételezéssel** készült.
+A felhasználó 2026-10-27-én mind a négy feltételezést jóváhagyta.
 
 1. **Kik az „aktív sprint résztvevői”?** A Jirában nincs külön sprinttagság.
    (Feltételezés: az aktív sprint feladatainak assignee-i. Alternatíva: a reporterek is.)

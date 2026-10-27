@@ -15,7 +15,7 @@ láncon átment változások:
 - `0004-ui-design` — PrimeNG-alapú, reszponzív felület
 - `0005-angular-refactor` — feature-first Angular-struktúra, service-réteg, Signal Forms
 
-A `0002-jira-user-import` és a `0003-jira-team-dashboard` specje még Draft. A lenti
+A `0002-jira-user-import` specje Approved, a `0003-jira-team-dashboard` specje még Draft. A lenti
 parancsok működnek; ha egy parancs mégsem létezik, mondd meg, ne találj ki helyette másikat.
 
 ## Stack
