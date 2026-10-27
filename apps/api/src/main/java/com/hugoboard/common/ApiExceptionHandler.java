@@ -37,6 +37,11 @@ public class ApiExceptionHandler {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
 	}
 
+	@ExceptionHandler(ForbiddenException.class)
+	public ProblemDetail handleForbidden(ForbiddenException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+	}
+
 	@ExceptionHandler(NotFoundException.class)
 	public ProblemDetail handleNotFound(NotFoundException ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());

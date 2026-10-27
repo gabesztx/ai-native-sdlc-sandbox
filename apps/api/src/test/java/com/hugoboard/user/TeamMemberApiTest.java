@@ -17,7 +17,6 @@ class TeamMemberApiTest extends ApiTestSupport {
 	void listsTeamMembersWithoutLogin() throws Exception {
 		insertMember("Teszt Elek");
 		insertMember("Minta Anna");
-		jdbc.sql("INSERT INTO admin_account (email, password_hash) VALUES ('admin@test.local', 'x')").update();
 
 		mvc.perform(get("/api/auth/team-members"))
 				.andExpect(status().isOk())

@@ -18,4 +18,9 @@ public class TeamMemberController {
 		return service.findAll();
 	}
 
+	@GetMapping("/api/admin/team-members")
+	public List<TeamMember> listForAdmin() {
+		return service.findAll();
+	}
+
 }

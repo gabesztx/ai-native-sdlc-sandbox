@@ -10,3 +10,8 @@ spring:
 springdoc:
   writer-with-order-by-keys: true
   writer-with-default-pretty-printer: true
+
+hugo:
+  admin:
+    email: ${HUGO_ADMIN_EMAIL:}
+    password: ${HUGO_ADMIN_PASSWORD:}
