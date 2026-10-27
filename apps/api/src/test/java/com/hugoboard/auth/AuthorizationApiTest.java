@@ -41,12 +41,21 @@ class AuthorizationApiTest extends ApiTestSupport {
 			id -> get("/api/me/reviews/" + id),
 			id -> post("/api/me/reviews/" + id + "/submit").contentType(MediaType.APPLICATION_JSON).content("{}"));
 
+	private static final List<Function<Long, MockHttpServletRequestBuilder>> ANY_USER_ENDPOINTS = List.of(
+			id -> get("/api/dashboard"),
+			id -> get("/api/dashboard/issues?tile=ALL"),
+			id -> get("/api/dashboard/stream"));
+
 	static Stream<Arguments> adminEndpoints() {
 		return ADMIN_ENDPOINTS.stream().map(Arguments::of);
 	}
 
 	static Stream<Arguments> memberEndpoints() {
 		return MEMBER_ENDPOINTS.stream().map(Arguments::of);
+	}
+
+	static Stream<Arguments> anyUserEndpoints() {
+		return ANY_USER_ENDPOINTS.stream().map(Arguments::of);
 	}
 
 	@ParameterizedTest
@@ -79,6 +88,22 @@ class AuthorizationApiTest extends ApiTestSupport {
 	void memberEndpointsRejectAdmin(Function<Long, MockHttpServletRequestBuilder> endpoint) throws Exception {
 		mvc.perform(endpoint.apply(ANY_ID).header(HttpHeaders.AUTHORIZATION, bearer(adminToken())))
 				.andExpect(status().isForbidden());
+	}
+
+	@ParameterizedTest
+	@MethodSource("anyUserEndpoints")
+	@DisplayName("AC24: belépés nélkül minden /api/dashboard** végpont 401")
+	void dashboardEndpointsRequireLogin(Function<Long, MockHttpServletRequestBuilder> endpoint) throws Exception {
+		mvc.perform(endpoint.apply(ANY_ID)).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("AC25: a /api/dashboard sem admin-, sem kolléga-specifikus — kollégaként is 200, nem 403")
+	void dashboardEndpointAcceptsMemberWithoutRoleCheck() throws Exception {
+		long memberId = insertMember("Teszt Elek");
+
+		mvc.perform(get("/api/dashboard").header(HttpHeaders.AUTHORIZATION, bearer(memberToken(memberId))))
+				.andExpect(status().isOk());
 	}
 
 	@Test

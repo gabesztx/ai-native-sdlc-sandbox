@@ -46,7 +46,7 @@ class RoleInterceptor implements HandlerInterceptor {
 	}
 
 	private static boolean isAnyUserPath(String path) {
-		return path.equals("/api/auth/me");
+		return path.equals("/api/auth/me") || path.equals("/api/dashboard") || path.startsWith("/api/dashboard/");
 	}
 
 }

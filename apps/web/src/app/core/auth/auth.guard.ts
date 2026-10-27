@@ -3,14 +3,14 @@ import { CanActivateFn, Router } from '@angular/router';
 import { Me } from '../api/models';
 import { AuthStoreService } from './auth-store.service';
 
-export function authGuard(role: Me['role']): CanActivateFn {
+export function authGuard(role?: Me['role']): CanActivateFn {
   return () => {
     const store = inject(AuthStoreService);
     const router = inject(Router);
     if (!store.isLoggedIn()) {
       return router.parseUrl('/login');
     }
-    if (store.role() !== role) {
+    if (role && store.role() !== role) {
       return router.parseUrl(store.homePath());
     }
     return true;

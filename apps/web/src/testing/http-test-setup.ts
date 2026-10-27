@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { Type } from '@angular/core';
+import { EnvironmentProviders, Provider, Type } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { provideApiConfiguration } from '../app/core/api/api-configuration';
@@ -14,10 +14,21 @@ export interface PageHarness<T> {
   root: () => HTMLElement;
 }
 
-export function createPage<T>(component: Type<T>, inputs: Record<string, unknown> = {}): PageHarness<T> {
+export function createPage<T>(
+  component: Type<T>,
+  inputs: Record<string, unknown> = {},
+  providers: (Provider | EnvironmentProviders)[] = [],
+): PageHarness<T> {
   TestBed.configureTestingModule({
     imports: [component],
-    providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), provideApiConfiguration(''), ...provideUiTesting()],
+    providers: [
+      provideRouter([]),
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideApiConfiguration(''),
+      ...provideUiTesting(),
+      ...providers,
+    ],
   });
   const router = TestBed.inject(Router);
   const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);

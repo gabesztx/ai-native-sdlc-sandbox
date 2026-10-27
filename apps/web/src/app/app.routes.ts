@@ -32,6 +32,11 @@ export const routes: Routes = [
         canActivate: [authGuard('MEMBER')],
         loadChildren: () => import('./features/reviews/reviews.routes').then((m) => m.reviewsRoutes),
       },
+      {
+        path: 'dashboard',
+        canActivate: [authGuard()],
+        loadChildren: () => import('./features/dashboard/dashboard.routes').then((m) => m.dashboardRoutes),
+      },
       { path: '', pathMatch: 'full', canActivate: [homeRedirectGuard], children: [] },
     ],
   },

@@ -11,3 +11,7 @@ hugo:
   admin:
     email: admin@test.local
     password: test-admin-password
+  dashboard:
+    # Large enough that the real @Scheduled poll never fires again during a test's short
+    # lifetime; tests call DashboardSyncService.syncNow() directly instead of waiting for it.
+    poll-interval-ms: 999999999

@@ -21,6 +21,8 @@ hugo:
     email: ${HUGO_JIRA_EMAIL:}
     api-token: ${HUGO_JIRA_API_TOKEN:}
     board-id: ${HUGO_JIRA_BOARD_ID:}
+  dashboard:
+    poll-interval-ms: ${HUGO_DASHBOARD_POLL_INTERVAL_MS:30000}
 
 # No springdoc.* section: writer-with-order-by-keys / writer-with-default-pretty-printer
 # had no effect on contracts/openapi.json in this Spring Boot / springdoc version, so they

@@ -1,6 +1,8 @@
 package com.hugoboard.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.client.ExpectedCount.between;
+import static org.springframework.test.web.client.ExpectedCount.once;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
@@ -79,24 +81,36 @@ class DevTeamSeederTest {
 		/**
 		 * A @Bean (not @Lazy) is created during context refresh, which happens before
 		 * Spring Boot invokes the ApplicationRunners — so the mock responses are already
-		 * registered on the shared builder by the time JiraTeamImportRunner calls out.
+		 * registered on the shared builder by the time JiraTeamImportRunner and
+		 * DashboardStartupRunner (both ApplicationRunners, order unspecified between them)
+		 * call out. ignoreExpectOrder + ExpectedCount ranges make the setup independent of
+		 * which of the two runs first.
 		 */
 		@TestConfiguration
 		static class PresetJiraServerConfig {
 
 			@Bean
 			MockRestServiceServer presetJiraServer(RestClient.Builder jiraRestClientBuilder) {
-				MockRestServiceServer server = MockRestServiceServer.bindTo(jiraRestClientBuilder).build();
-				server.expect(requestTo("http://127.0.0.1:1/rest/agile/1.0/board/535/sprint?state=active"))
+				MockRestServiceServer server = MockRestServiceServer.bindTo(jiraRestClientBuilder)
+						.ignoreExpectOrder(true)
+						.build();
+				server.expect(between(1, 2),
+						requestTo("http://127.0.0.1:1/rest/agile/1.0/board/535/sprint?state=active"))
 						.andRespond(withSuccess(
-								"{\"values\":[{\"id\":42,\"state\":\"active\"}]}", MediaType.APPLICATION_JSON));
-				server.expect(requestTo(
+								"{\"values\":[{\"id\":42,\"name\":\"HUGO Sprint 1\",\"state\":\"active\"}]}",
+								MediaType.APPLICATION_JSON));
+				server.expect(once(), requestTo(
 						"http://127.0.0.1:1/rest/agile/1.0/sprint/42/issue?startAt=0&maxResults=50&fields=assignee"))
 						.andRespond(withSuccess("""
 								{"startAt":0,"maxResults":50,"total":1,"issues":[
 								  {"fields":{"assignee":{"accountId":"a1","displayName":"Valodi Vera","active":true}}}
 								]}
 								""", MediaType.APPLICATION_JSON));
+				server.expect(once(), requestTo("http://127.0.0.1:1/rest/agile/1.0/sprint/42/issue?startAt=0"
+						+ "&maxResults=50&fields=summary%2Cstatus%2Cassignee%2Cupdated"))
+						.andRespond(withSuccess(
+								"{\"startAt\":0,\"maxResults\":50,\"total\":0,\"issues\":[]}",
+								MediaType.APPLICATION_JSON));
 				return server;
 			}
 

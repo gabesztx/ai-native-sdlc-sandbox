@@ -52,20 +52,20 @@ async function renderAt(url: string): Promise<HTMLElement> {
 describe('ShellComponent', () => {
   beforeEach(() => sessionStorage.clear());
 
-  it('AC46: adminként az Űrlapok, Új űrlap, Csapattagok menüpont és a Kilépés látszik', async () => {
+  it('AC46: adminként az Űrlapok, Új űrlap, Csapattagok, Dashboard menüpont és a Kilépés látszik', async () => {
     storeSession(adminTokens());
     const root = await render();
 
-    expect(menuLabels(root)).toEqual(['Űrlapok', 'Új űrlap', 'Csapattagok']);
+    expect(menuLabels(root)).toEqual(['Űrlapok', 'Új űrlap', 'Csapattagok', 'Dashboard']);
     expect(root.querySelector('.logout')?.textContent).toContain('Kilépés');
     expect(root.textContent).not.toContain('Értékeléseim');
   });
 
-  it('AC47: kollégaként csak az Értékeléseim menüpont és a Kilépés látszik', async () => {
+  it('AC47: kollégaként az Értékeléseim és a Dashboard menüpont, valamint a Kilépés látszik', async () => {
     storeSession(memberTokens());
     const root = await render();
 
-    expect(menuLabels(root)).toEqual(['Értékeléseim']);
+    expect(menuLabels(root)).toEqual(['Értékeléseim', 'Dashboard']);
     expect(root.querySelector('.user-name')?.textContent).toContain('Teszt Elek');
     expect(root.querySelector('.logout')).not.toBeNull();
   });

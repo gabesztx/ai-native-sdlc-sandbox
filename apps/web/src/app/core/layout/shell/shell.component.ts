@@ -19,14 +19,18 @@ interface MenuItem {
   badgeUnit?: string;
 }
 
+const DASHBOARD_MENU_ITEM: MenuItem = { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-chart-bar' };
+
 const ADMIN_MENU: MenuItem[] = [
   { label: 'Űrlapok', path: '/admin/forms', icon: 'pi pi-file', badgeUnit: 'piszkozat' },
   { label: 'Új űrlap', path: '/admin/forms/new', icon: 'pi pi-plus' },
   { label: 'Csapattagok', path: '/admin/team', icon: 'pi pi-users' },
+  DASHBOARD_MENU_ITEM,
 ];
 
 const MEMBER_MENU: MenuItem[] = [
   { label: 'Értékeléseim', path: '/reviews', icon: 'pi pi-inbox', badgeUnit: 'kitöltendő' },
+  DASHBOARD_MENU_ITEM,
 ];
 
 @Component({
