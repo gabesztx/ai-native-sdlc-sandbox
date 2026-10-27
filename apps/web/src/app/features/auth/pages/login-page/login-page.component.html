@@ -21,8 +21,8 @@
         [options]="members()"
         [fluid]="true"
       />
-      @if (memberError()) {
-        <p-message severity="error" class="error">{{ memberError() }}</p-message>
+      @if (memberError(); as message) {
+        <p-message severity="error" class="error">{{ message }}</p-message>
       }
       <p-button
         type="submit"
@@ -48,8 +48,8 @@
         autocomplete="current-password"
         [fluid]="true"
       />
-      @if (adminError()) {
-        <p-message severity="error" class="error">{{ adminError() }}</p-message>
+      @if (adminError(); as message) {
+        <p-message severity="error" class="error">{{ message }}</p-message>
       }
       <p-button
         type="submit"

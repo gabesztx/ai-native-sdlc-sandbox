@@ -45,7 +45,7 @@ function restrictedImports({ paths = [], patterns = [] } = {}) {
 function otherFeaturesPattern(feature) {
   const others = FEATURES.filter((name) => name !== feature).join("|");
   return {
-    regex: `^(\\.\\./)+(${others})/`,
+    regex: `^(\\.\\./)+(features/)?(${others})/`,
     message: "A feature does not import from another feature.",
   };
 }

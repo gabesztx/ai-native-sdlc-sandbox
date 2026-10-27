@@ -1,11 +1,12 @@
 @let name = userName();
 <ng-template #menuItems let-variant>
   @for (item of menu(); track item.path) {
+    @let active = activePath() === item.path;
     <a
       class="menu-item"
       [class.bottom]="variant === 'bottom'"
-      [class.active]="activePath() === item.path"
-      [attr.aria-current]="activePath() === item.path ? 'page' : null"
+      [class.active]="active"
+      [attr.aria-current]="active ? 'page' : null"
       [routerLink]="item.path"
     >
       <i class="menu-icon" [class]="item.icon" aria-hidden="true"></i>

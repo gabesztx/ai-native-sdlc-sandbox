@@ -1,5 +1,5 @@
-@if (error()) {
-  <p-message severity="error" class="error">{{ error() }}</p-message>
+@if (error(); as message) {
+  <p-message severity="error" class="error">{{ message }}</p-message>
 }
 
 @if (loading()) {

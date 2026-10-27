@@ -3,8 +3,8 @@
   subtitle="Add meg a fő témát, az értékelt kollégát és a kérdéseket."
 />
 
-@if (generalError()) {
-  <p-message severity="error" class="error">{{ generalError() }}</p-message>
+@if (generalError(); as message) {
+  <p-message severity="error" class="error">{{ message }}</p-message>
 }
 
 <form class="editor" [formRoot]="editor" (submit)="onSave()">
