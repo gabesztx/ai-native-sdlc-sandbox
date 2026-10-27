@@ -1,45 +1,65 @@
 @if (error()) {
-  <p class="error" role="alert">{{ error() }}</p>
+  <p-message severity="error" class="error">{{ error() }}</p-message>
 }
+
 @if (review(); as current) {
-  <h1>{{ current.topic }}</h1>
-  <p>Értékelt: <strong>{{ current.evaluatedMember.name }}</strong></p>
+  <page-header [title]="current.topic" [subtitle]="'Értékelt: ' + current.evaluatedMember.name" />
 
   @if (current.status === 'SUBMITTED') {
-    <p class="submitted">Ezt az értékelést már beküldted.</p>
+    <p-message severity="info" class="submitted">Ezt az értékelést már beküldted.</p-message>
   } @else {
     <form class="fill" [formGroup]="form" (ngSubmit)="onSubmit()">
-      @for (question of current.questions; track question.id; let i = $index) {
-        <fieldset class="question">
-          <legend>
-            {{ question.text }}
-            @if (question.required) {
-              <span class="required">*</span>
-            }
-          </legend>
-          @if (question.type === 'SCALE') {
-            <div class="scale">
-              @for (value of scaleValues(question); track value) {
-                <label class="scale-option">
-                  <input type="radio" [name]="'q' + question.id" [value]="value" [formControl]="answers.at(i)" />
-                  {{ value }}
-                </label>
+      <div class="questions">
+        @for (question of current.questions; track question.id; let i = $index) {
+          <p-card class="question stagger-item">
+            <fieldset>
+              <legend>
+                {{ question.text }}
+                @if (question.required) {
+                  <span class="required">*</span>
+                }
+              </legend>
+              @if (question.type === 'SCALE') {
+                @if (useSelectButton(question)) {
+                  <div class="scale">
+                    <p-selectbutton [options]="scaleOptions(question)" optionLabel="label" optionValue="value" [formControl]="answers.at(i)" />
+                  </div>
+                } @else {
+                  <div class="scale-input">
+                    <p-inputnumber
+                      [formControl]="answers.at(i)"
+                      [min]="question.scaleMin ?? undefined"
+                      [max]="question.scaleMax ?? undefined"
+                      [useGrouping]="false"
+                    />
+                    <span class="hint muted">({{ question.scaleMin }}–{{ question.scaleMax }})</span>
+                  </div>
+                }
+              } @else {
+                <textarea
+                  pTextarea
+                  [attr.aria-label]="question.text"
+                  [formControl]="answers.at(i)"
+                  rows="3"
+                  maxlength="2000"
+                  [fluid]="true"
+                ></textarea>
               }
-            </div>
-          } @else {
-            <textarea
-              [attr.aria-label]="question.text"
-              [formControl]="answers.at(i)"
-              rows="3"
-              maxlength="2000"
-            ></textarea>
-          }
-          @if (questionErrors()[question.id]) {
-            <span class="field-error">{{ questionErrors()[question.id] }}</span>
-          }
-        </fieldset>
-      }
-      <button type="submit" class="submit">Beküldés</button>
+              @if (questionErrors()[question.id]) {
+                <p-message severity="error" variant="simple" size="small" class="field-error">
+                  {{ questionErrors()[question.id] }}
+                </p-message>
+              }
+            </fieldset>
+          </p-card>
+        }
+      </div>
+      <div class="submit-bar">
+        <button pButton type="submit" class="submit" [loading]="submitting()" [fluid]="true">
+          <i pButtonIcon class="pi pi-send"></i>
+          <span pButtonLabel>Beküldés</span>
+        </button>
+      </div>
     </form>
   }
 }
