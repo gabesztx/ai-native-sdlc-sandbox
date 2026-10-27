@@ -13,9 +13,10 @@
       "Bash(npm run lint:*)",
       "Bash(npm run build:*)",
       "Bash(npm -w apps/web test:*)",
+      "Bash(npm run contract:update:*)",
+      "Bash(npm run api:client:*)",
       "Bash(./mvnw verify:*)",
-      "Bash(./mvnw test:*)",
-      "Bash(./mvnw -pl apps/api test:*)"
+      "Bash(./mvnw test:*)"
     ],
     "deny": [
       "Bash(git push --force:*)",

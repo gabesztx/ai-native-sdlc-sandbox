@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:target/test-${random.uuid}.db?foreign_keys=true&journal_mode=WAL&busy_timeout=5000

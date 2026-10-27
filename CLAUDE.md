@@ -8,9 +8,9 @@ intent → spec → plan → build → review.
 
 ## Állapot
 
-Az app még NINCS létrehozva. Egyelőre csak az agent-konfiguráció létezik. A lenti
-parancsok a célállapotot írják le — ha egy parancs még nem létezik, mondd meg, ne találj
-ki helyette másikat.
+Az app váza létezik (`apps/web`, `apps/api`, `contracts/openapi.json`), feature-kód még
+nincs. A lenti parancsok működnek; ha egy parancs mégsem létezik, mondd meg, ne találj ki
+helyette másikat.
 
 ## Stack
 
@@ -35,12 +35,14 @@ docs/changes/<id>-<slug>/ változásonként intent.md, spec.md, plan.md
 .claude/agents/           specializált subagentek (verifier, reviewerek)
 ```
 
-## Parancsok (cél)
+## Parancsok
 
-- `npm run check` — az egyetlen ellenőrző parancs: web lint + test + build, utána
-  `./mvnw verify`. Ez a feedback loop.
+- `npm run check` — az egyetlen ellenőrző parancs: API-kliens generálás, web lint + test
+  + build, utána `./mvnw verify` (benne az OpenAPI-szerződés teszt). Ez a feedback loop.
 - `npm run dev:web` és `npm run dev:api` — web és API helyi futtatása, két külön terminálban.
-- Egy teszt: `npm -w apps/web test -- <minta>` / `./mvnw -pl apps/api test -Dtest=<Osztály>`.
+- Egy teszt: `npm -w apps/web test -- --filter <minta>` / `cd apps/api && ./mvnw test -Dtest=<Osztály>`.
+- `npm run contract:update` — a `contracts/openapi.json` újragenerálása API-változás után.
+- `npm run api:client -w apps/web` — az Angular kliens generálása a szerződésből.
 
 ## Definition of done
 
