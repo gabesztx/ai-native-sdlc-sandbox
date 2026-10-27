@@ -3,7 +3,7 @@ import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalE
 import { provideRouter, withComponentInputBinding, withViewTransitions } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
-import { provideApiConfiguration } from './api/api-configuration';
+import { provideApiConfiguration } from './core/api/api-configuration';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { HugoPreset } from './core/theme/hugo-preset';

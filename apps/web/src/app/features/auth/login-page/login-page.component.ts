@@ -8,7 +8,7 @@ import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
-import { AuthTokens } from '../../../api/models';
+import { AuthTokens } from '../../../core/api/models';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { AuthStoreService } from '../../../core/auth/auth-store.service';
 import { ThemeToggleComponent } from '../../../shared/ui/theme-toggle/theme-toggle.component';

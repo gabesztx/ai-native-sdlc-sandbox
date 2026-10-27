@@ -2,7 +2,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { provideApiConfiguration } from '../../../api/api-configuration';
+import { provideApiConfiguration } from '../../api/api-configuration';
 import { adminTokens, memberTokens, storeSession } from '../../../../testing/auth-fixtures';
 import { provideUiTesting } from '../../../../testing/ui-providers';
 import { authInterceptor } from '../../auth/auth.interceptor';

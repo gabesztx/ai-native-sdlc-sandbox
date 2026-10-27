@@ -1,4 +1,4 @@
-import { ReviewDetail, ReviewSummary } from '../app/api/models';
+import { ReviewDetail, ReviewSummary } from '../app/core/api/models';
 
 export function pendingReview(): ReviewDetail {
   return {

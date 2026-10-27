@@ -1,4 +1,4 @@
-import { FormSummary } from '../../../api/models';
+import { FormSummary } from '../../../core/api/models';
 import { createPage } from '../../../../testing/http-test-setup';
 import { FormListPageComponent } from './form-list-page.component';
 

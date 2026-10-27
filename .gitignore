@@ -5,7 +5,7 @@ node_modules/
 apps/web/dist/
 apps/web/.angular/
 apps/web/coverage/
-apps/web/src/app/api/
+apps/web/src/app/core/api/
 
 apps/api/target/
 apps/api/data/*

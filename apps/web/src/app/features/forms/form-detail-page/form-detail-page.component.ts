@@ -12,7 +12,7 @@ import { ProgressBar } from 'primeng/progressbar';
 import { Skeleton } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
-import { FormDetail, FormResponse } from '../../../api/models';
+import { FormDetail, FormResponse } from '../../../core/api/models';
 import { problemOf } from '../../../core/http/problem-detail';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';

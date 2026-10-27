@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { ApiConfiguration } from '../../api/api-configuration';
-import { getMyReview } from '../../api/fn/review-controller/get-my-review';
-import { listMyReviews } from '../../api/fn/review-controller/list-my-reviews';
-import { submitMyReview } from '../../api/fn/review-controller/submit-my-review';
-import { ReviewDetail, ReviewSummary, SubmitInput } from '../../api/models';
+import { ApiConfiguration } from '../../core/api/api-configuration';
+import { getMyReview } from '../../core/api/fn/review-controller/get-my-review';
+import { listMyReviews } from '../../core/api/fn/review-controller/list-my-reviews';
+import { submitMyReview } from '../../core/api/fn/review-controller/submit-my-review';
+import { ReviewDetail, ReviewSummary, SubmitInput } from '../../core/api/models';
 
 @Service()
 export class ReviewsApiService {

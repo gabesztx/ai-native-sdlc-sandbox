@@ -1,15 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { ApiConfiguration } from '../../api/api-configuration';
-import { createForm } from '../../api/fn/form-controller/create-form';
-import { deleteForm } from '../../api/fn/form-controller/delete-form';
-import { getForm } from '../../api/fn/form-controller/get-form';
-import { listFormResponses } from '../../api/fn/form-controller/list-form-responses';
-import { listForms } from '../../api/fn/form-controller/list-forms';
-import { sendForm } from '../../api/fn/form-controller/send-form';
-import { updateForm } from '../../api/fn/form-controller/update-form';
-import { FormDetail, FormInput, FormResponse, FormSummary } from '../../api/models';
+import { ApiConfiguration } from '../../core/api/api-configuration';
+import { createForm } from '../../core/api/fn/form-controller/create-form';
+import { deleteForm } from '../../core/api/fn/form-controller/delete-form';
+import { getForm } from '../../core/api/fn/form-controller/get-form';
+import { listFormResponses } from '../../core/api/fn/form-controller/list-form-responses';
+import { listForms } from '../../core/api/fn/form-controller/list-forms';
+import { sendForm } from '../../core/api/fn/form-controller/send-form';
+import { updateForm } from '../../core/api/fn/form-controller/update-form';
+import { FormDetail, FormInput, FormResponse, FormSummary } from '../../core/api/models';
 
 @Service()
 export class FormsApiService {

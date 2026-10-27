@@ -1,4 +1,4 @@
-import { Me } from '../../api/models';
+import { Me } from '../../core/api/models';
 
 export interface StoredAuth {
   accessToken: string;

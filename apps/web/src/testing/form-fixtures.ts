@@ -1,4 +1,4 @@
-import { FormDetail, FormResponse } from '../app/api/models';
+import { FormDetail, FormResponse } from '../app/core/api/models';
 
 export const TEAM = [
   { id: 3, name: 'Teszt Elek' },

@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { Type } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { provideApiConfiguration } from '../app/api/api-configuration';
+import { provideApiConfiguration } from '../app/core/api/api-configuration';
 import { provideUiTesting } from './ui-providers';
 
 export interface PageHarness<T> {

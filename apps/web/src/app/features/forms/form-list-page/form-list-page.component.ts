@@ -8,7 +8,7 @@ import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
 import { Skeleton } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
-import { FormSummary } from '../../../api/models';
+import { FormSummary } from '../../../core/api/models';
 import { BreakpointService } from '../../../core/layout/breakpoint.service';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';

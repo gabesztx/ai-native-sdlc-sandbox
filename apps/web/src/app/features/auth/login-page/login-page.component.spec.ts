@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { provideApiConfiguration } from '../../../api/api-configuration';
+import { provideApiConfiguration } from '../../../core/api/api-configuration';
 import { adminTokens, memberTokens } from '../../../../testing/auth-fixtures';
 import { provideUiTesting } from '../../../../testing/ui-providers';
 import { LoginPageComponent } from './login-page.component';

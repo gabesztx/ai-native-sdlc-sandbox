@@ -1,5 +1,5 @@
 import { Service, computed, signal } from '@angular/core';
-import { AuthTokens } from '../../api/models';
+import { AuthTokens } from '../api/models';
 import { StoredAuth } from '../../shared/models/stored-auth.model';
 
 const STORAGE_KEY = 'hugo.auth';

@@ -1,4 +1,4 @@
-import { AuthTokens } from '../app/api/models';
+import { AuthTokens } from '../app/core/api/models';
 
 export function adminTokens(suffix = '1'): AuthTokens {
   return {
