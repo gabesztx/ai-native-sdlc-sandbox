@@ -4,10 +4,10 @@ import { catchError, of } from 'rxjs';
 import { Card } from 'primeng/card';
 import { Skeleton } from 'primeng/skeleton';
 import { TeamMember } from '../../../../core/api/models';
-import { TeamApiService } from '../../../../core/team/team-api.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { MemberAvatarComponent } from '../../../../shared/components/member-avatar/member-avatar.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { TeamService } from '../../services/team.service';
 
 @Component({
   selector: 'team-page',
@@ -16,9 +16,9 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
   styleUrl: './team-page.component.scss',
 })
 export class TeamPageComponent {
-  private teamApi = inject(TeamApiService);
+  private teamService = inject(TeamService);
 
-  public members = toSignal<TeamMember[] | undefined>(this.teamApi.list().pipe(catchError(() => of([]))), {
+  public members = toSignal<TeamMember[] | undefined>(this.teamService.list().pipe(catchError(() => of([]))), {
     initialValue: undefined,
   });
   public loading = computed(() => this.members() === undefined);

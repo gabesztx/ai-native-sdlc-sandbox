@@ -21,7 +21,7 @@ import { Textarea } from 'primeng/textarea';
 import { AnswerInput, Question, ReviewDetail } from '../../../../core/api/models';
 import { problemOf } from '../../../../core/http/problem-detail';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
-import { ReviewsApiService } from '../../reviews-api.service';
+import { ReviewsService } from '../../services/reviews.service';
 
 const MAX_TEXT_LENGTH = 2000;
 const MAX_SELECT_BUTTON_VALUES = 11;
@@ -46,7 +46,7 @@ type AnswerControl = FormControl<number | string | null>;
   styleUrl: './review-fill-page.component.scss',
 })
 export class ReviewFillPageComponent {
-  private reviewsApi = inject(ReviewsApiService);
+  private reviewsService = inject(ReviewsService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private messages = inject(MessageService);
@@ -62,7 +62,7 @@ export class ReviewFillPageComponent {
   public constructor() {
     toObservable(this.id)
       .pipe(
-        switchMap((id) => this.reviewsApi.get(Number(id)).pipe(catchError((e: unknown) => this.fail(e)))),
+        switchMap((id) => this.reviewsService.get(Number(id)).pipe(catchError((e: unknown) => this.fail(e)))),
         takeUntilDestroyed(),
       )
       .subscribe((review) => this.load(review));
@@ -100,7 +100,7 @@ export class ReviewFillPageComponent {
     this.error.set('');
     this.questionErrors.set({});
     this.submitting.set(true);
-    this.reviewsApi
+    this.reviewsService
       .submit(review.id, body)
       .pipe(
         catchError((e: unknown) => this.showSubmitError(e, body.answers)),

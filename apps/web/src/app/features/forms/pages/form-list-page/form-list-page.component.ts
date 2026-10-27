@@ -14,7 +14,7 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { StatTileComponent } from '../../../../shared/components/stat-tile/stat-tile.component';
 import { StatusTagComponent } from '../../../../shared/components/status-tag/status-tag.component';
-import { FormsApiService } from '../../forms-api.service';
+import { FormsService } from '../../services/forms.service';
 
 @Component({
   selector: 'form-list-page',
@@ -38,11 +38,11 @@ import { FormsApiService } from '../../forms-api.service';
   styleUrl: './form-list-page.component.scss',
 })
 export class FormListPageComponent {
-  private formsApi = inject(FormsApiService);
+  private formsService = inject(FormsService);
   private router = inject(Router);
 
   public isMobile = inject(BreakpointService).isMobile;
-  public forms = toSignal<FormSummary[] | undefined>(this.formsApi.list().pipe(catchError(() => of([]))), {
+  public forms = toSignal<FormSummary[] | undefined>(this.formsService.list().pipe(catchError(() => of([]))), {
     initialValue: undefined,
   });
   public loading = computed(() => this.forms() === undefined);

@@ -9,8 +9,8 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { AuthTokens } from '../../../../core/api/models';
-import { AuthApiService } from '../../../../core/auth/auth-api.service';
 import { AuthStoreService } from '../../../../core/auth/auth-store.service';
+import { LoginService } from '../../services/login.service';
 import { ThemeToggleComponent } from '../../../../shared/components/theme-toggle/theme-toggle.component';
 
 @Component({
@@ -20,11 +20,11 @@ import { ThemeToggleComponent } from '../../../../shared/components/theme-toggle
   styleUrl: './login-page.component.scss',
 })
 export class LoginPageComponent {
-  private authApi = inject(AuthApiService);
+  private loginService = inject(LoginService);
   private store = inject(AuthStoreService);
   private router = inject(Router);
 
-  public members = toSignal(this.authApi.teamMembers().pipe(catchError(() => EMPTY)), {
+  public members = toSignal(this.loginService.teamMembers().pipe(catchError(() => EMPTY)), {
     initialValue: [],
   });
   public adminError = signal('');
@@ -52,7 +52,7 @@ export class LoginPageComponent {
     const { email, password } = this.adminForm.getRawValue();
     this.adminError.set('');
     this.adminLoading.set(true);
-    this.authApi
+    this.loginService
       .loginAdmin(email, password)
       .pipe(
         catchError(() => {
@@ -75,7 +75,7 @@ export class LoginPageComponent {
     }
     this.memberError.set('');
     this.memberLoading.set(true);
-    this.authApi
+    this.loginService
       .loginMember(memberId)
       .pipe(
         catchError(() => {

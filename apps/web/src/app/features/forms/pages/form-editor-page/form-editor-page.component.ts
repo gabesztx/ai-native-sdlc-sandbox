@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { EMPTY, catchError, filter, finalize, switchMap } from 'rxjs';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputNumber } from 'primeng/inputnumber';
@@ -21,10 +21,9 @@ import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { FormDetail, FormInput, Question } from '../../../../core/api/models';
 import { problemOf } from '../../../../core/http/problem-detail';
-import { TeamApiService } from '../../../../core/team/team-api.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
-import { confirmDelete } from '../../confirm-delete';
-import { FormsApiService } from '../../forms-api.service';
+import { ConfirmDeleteService } from '../../services/confirm-delete.service';
+import { FormsService } from '../../services/forms.service';
 
 type QuestionType = Question['type'];
 
@@ -56,16 +55,15 @@ type QuestionGroup = FormGroup<{
   styleUrl: './form-editor-page.component.scss',
 })
 export class FormEditorPageComponent {
-  private formsApi = inject(FormsApiService);
-  private teamApi = inject(TeamApiService);
+  private formsService = inject(FormsService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private messages = inject(MessageService);
-  private confirmation = inject(ConfirmationService);
+  private confirmDelete = inject(ConfirmDeleteService);
 
   public id = input<string>();
   public isEdit = computed(() => this.id() !== undefined);
-  public members = toSignal(this.teamApi.list().pipe(catchError(() => EMPTY)), { initialValue: [] });
+  public members = toSignal(this.formsService.teamMembers().pipe(catchError(() => EMPTY)), { initialValue: [] });
   public serverErrors = signal<Record<string, string>>({});
   public generalError = signal('');
   public saving = signal(false);
@@ -84,7 +82,7 @@ export class FormEditorPageComponent {
     toObservable(this.id)
       .pipe(
         filter((id): id is string => id !== undefined),
-        switchMap((id) => this.formsApi.get(Number(id)).pipe(catchError(() => this.notFound()))),
+        switchMap((id) => this.formsService.get(Number(id)).pipe(catchError(() => this.notFound()))),
         takeUntilDestroyed(),
       )
       .subscribe((detail) => this.load(detail));
@@ -120,7 +118,7 @@ export class FormEditorPageComponent {
     }
     const body = this.toInput();
     const id = this.id();
-    const request = id === undefined ? this.formsApi.create(body) : this.formsApi.update(Number(id), body);
+    const request = id === undefined ? this.formsService.create(body) : this.formsService.update(Number(id), body);
     this.serverErrors.set({});
     this.generalError.set('');
     this.saving.set(true);
@@ -141,12 +139,12 @@ export class FormEditorPageComponent {
     if (id === undefined || this.deleting()) {
       return;
     }
-    confirmDelete(this.confirmation, () => this.delete(Number(id)));
+    this.confirmDelete.confirm(() => this.delete(Number(id)));
   }
 
   private delete(id: number): void {
     this.deleting.set(true);
-    this.formsApi
+    this.formsService
       .delete(id)
       .pipe(
         catchError((error: unknown) => this.showError(error)),

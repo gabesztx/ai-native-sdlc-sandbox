@@ -1,17 +1,15 @@
-import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { Observable, catchError, filter, map, of, switchMap } from 'rxjs';
-import { ApiConfiguration } from '../api/api-configuration';
-import { listForms } from '../api/fn/form-controller/list-forms';
-import { listMyReviews } from '../api/fn/review-controller/list-my-reviews';
+import { FormControllerService } from '../api/services/form-controller.service';
+import { ReviewControllerService } from '../api/services/review-controller.service';
 import { AuthStoreService } from '../auth/auth-store.service';
 
 @Service()
 export class MenuBadgesService {
-  private http = inject(HttpClient);
-  private config = inject(ApiConfiguration);
+  private formApi = inject(FormControllerService);
+  private reviewApi = inject(ReviewControllerService);
   private router = inject(Router);
   private store = inject(AuthStoreService);
 
@@ -27,16 +25,14 @@ export class MenuBadgesService {
     const role = this.store.role();
     if (role === 'ADMIN') {
       return this.countOf(
-        listForms(this.http, this.config.rootUrl).pipe(
-          map((response) => response.body.filter((form) => form.status === 'DRAFT').length),
-        ),
+        this.formApi.listForms().pipe(map((forms) => forms.filter((form) => form.status === 'DRAFT').length)),
       );
     }
     if (role === 'MEMBER') {
       return this.countOf(
-        listMyReviews(this.http, this.config.rootUrl).pipe(
-          map((response) => response.body.filter((review) => review.status === 'PENDING').length),
-        ),
+        this.reviewApi
+          .listMyReviews()
+          .pipe(map((reviews) => reviews.filter((review) => review.status === 'PENDING').length)),
       );
     }
     return of(null);

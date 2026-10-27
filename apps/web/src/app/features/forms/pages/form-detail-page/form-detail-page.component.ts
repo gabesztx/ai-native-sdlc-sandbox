@@ -3,7 +3,7 @@ import { Component, DestroyRef, computed, inject, input, signal } from '@angular
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { EMPTY, catchError, finalize, of, switchMap } from 'rxjs';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel } from 'primeng/accordion';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -17,8 +17,8 @@ import { problemOf } from '../../../../core/http/problem-detail';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { StatusTagComponent } from '../../../../shared/components/status-tag/status-tag.component';
-import { confirmDelete } from '../../confirm-delete';
-import { FormsApiService } from '../../forms-api.service';
+import { ConfirmDeleteService } from '../../services/confirm-delete.service';
+import { FormsService } from '../../services/forms.service';
 
 @Component({
   selector: 'form-detail-page',
@@ -46,11 +46,11 @@ import { FormsApiService } from '../../forms-api.service';
   styleUrl: './form-detail-page.component.scss',
 })
 export class FormDetailPageComponent {
-  private formsApi = inject(FormsApiService);
+  private formsService = inject(FormsService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private messages = inject(MessageService);
-  private confirmation = inject(ConfirmationService);
+  private confirmDelete = inject(ConfirmDeleteService);
 
   public id = input.required<string>();
   public detail = signal<FormDetail | null>(null);
@@ -67,7 +67,7 @@ export class FormDetailPageComponent {
   public constructor() {
     toObservable(this.id)
       .pipe(
-        switchMap((id) => this.formsApi.get(Number(id)).pipe(catchError((e: unknown) => this.fail(e)))),
+        switchMap((id) => this.formsService.get(Number(id)).pipe(catchError((e: unknown) => this.fail(e)))),
         takeUntilDestroyed(),
       )
       .subscribe((detail) => this.show(detail));
@@ -83,7 +83,7 @@ export class FormDetailPageComponent {
     }
     this.error.set('');
     this.sending.set(true);
-    this.formsApi
+    this.formsService
       .send(Number(this.id()))
       .pipe(
         catchError((e: unknown) => this.fail(e)),
@@ -100,12 +100,12 @@ export class FormDetailPageComponent {
     if (this.deleting()) {
       return;
     }
-    confirmDelete(this.confirmation, () => this.delete());
+    this.confirmDelete.confirm(() => this.delete());
   }
 
   private delete(): void {
     this.deleting.set(true);
-    this.formsApi
+    this.formsService
       .delete(Number(this.id()))
       .pipe(
         catchError((e: unknown) => this.fail(e)),
@@ -122,7 +122,7 @@ export class FormDetailPageComponent {
     this.detail.set(detail);
     const responses$ =
       detail.status === 'SENT'
-        ? this.formsApi.responses(detail.id).pipe(catchError((e: unknown) => this.fail(e)))
+        ? this.formsService.responses(detail.id).pipe(catchError((e: unknown) => this.fail(e)))
         : of([]);
     responses$
       .pipe(takeUntilDestroyed(this.destroyRef))

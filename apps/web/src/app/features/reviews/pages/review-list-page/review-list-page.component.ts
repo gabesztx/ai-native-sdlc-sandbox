@@ -11,7 +11,7 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { StatTileComponent } from '../../../../shared/components/stat-tile/stat-tile.component';
 import { StatusTagComponent } from '../../../../shared/components/status-tag/status-tag.component';
-import { ReviewsApiService } from '../../reviews-api.service';
+import { ReviewsService } from '../../services/reviews.service';
 
 @Component({
   selector: 'review-list-page',
@@ -32,9 +32,9 @@ import { ReviewsApiService } from '../../reviews-api.service';
   styleUrl: './review-list-page.component.scss',
 })
 export class ReviewListPageComponent {
-  private reviewsApi = inject(ReviewsApiService);
+  private reviewsService = inject(ReviewsService);
 
-  public reviews = toSignal<ReviewSummary[] | undefined>(this.reviewsApi.list().pipe(catchError(() => of([]))), {
+  public reviews = toSignal<ReviewSummary[] | undefined>(this.reviewsService.list().pipe(catchError(() => of([]))), {
     initialValue: undefined,
   });
   public loading = computed(() => this.reviews() === undefined);
