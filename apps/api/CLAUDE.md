@@ -98,4 +98,4 @@ ne kommenteld.
 ## OpenAPI-szerződés
 
 - A springdoc generálja; a `contracts/openapi.json` a build része, commitolva.
-- Ha az API változik, a fájlt újra kell generálni; a `pnpm check` elbukik, ha elavult.
+- Ha az API változik, a fájlt újra kell generálni; az `npm run check` elbukik, ha elavult.

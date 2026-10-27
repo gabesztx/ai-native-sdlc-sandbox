@@ -16,7 +16,7 @@ A cél egy rövid lista, amin egy ember tud dolgozni, nem egy kimerítő felsoro
   kézzel írt kliens a generált helyett.
 - Tesztek: új viselkedés teszt nélkül, átmenés kedvéért meggyengített vagy törölt teszt,
   vagy olyan teszt, ami nem tud elbukni.
-- A `pnpm check` nem zöld.
+- Az `npm run check` nem zöld.
 
 ### Nit — opcionális, a szerző dönt
 

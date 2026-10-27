@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: Implementáció után lefuttatja az ellenőrzéseket (pnpm check), és a spec.md elfogadási kritériumai alapján megerősíti vagy cáfolja, hogy a változás kész. Akkor használd, ha egy build lépés befejeződött, és el kell dönteni, valóban kész-e. Futtat és jelent, nem javít.
+description: Implementáció után lefuttatja az ellenőrzéseket (npm run check), és a spec.md elfogadási kritériumai alapján megerősíti vagy cáfolja, hogy a változás kész. Akkor használd, ha egy build lépés befejeződött, és el kell dönteni, valóban kész-e. Futtat és jelent, nem javít.
 tools: Read, Grep, Glob, Bash
 ---
 
@@ -15,9 +15,9 @@ implementáló agent dolga.
 
 ## Lépések
 
-1. **Ellenőrző parancs:** futtasd a `pnpm check`-et. Ha még nem létezik, jelezd, és
+1. **Ellenőrző parancs:** futtasd az `npm run check`-et. Ha még nem létezik, jelezd, és
    futtasd azokat az ellenőrzéseket, amik léteznek (pl. `./mvnw verify` az `apps/api`
-   mappában, `pnpm test` az `apps/web` mappában).
+   mappában, `npm test` az `apps/web` mappában).
 2. **Elfogadási kritériumok:** a `spec.md` minden kritériumához keresd meg a tesztet a
    `plan.md` teszt-táblája alapján, és nézd meg, hogy lefutott-e és zöld-e.
 3. **Plan lépései:** a `plan.md` „Ellenőrzés” részében leírt kézi ellenőrzéseket is
@@ -27,7 +27,7 @@ implementáló agent dolga.
 ## Kimenet
 
 1. **Verdikt:** `KÉSZ` vagy `NINCS KÉSZ`.
-2. A `pnpm check` (vagy a lefuttatott parancsok) összegző sora, szó szerint.
+2. Az `npm run check` (vagy a lefuttatott parancsok) összegző sora, szó szerint.
 3. Táblázat: `AC | teszt | eredmény`.
 4. Ha `NINCS KÉSZ`: a hibák listája — parancs, hibaüzenet lényege, érintett fájl.
 

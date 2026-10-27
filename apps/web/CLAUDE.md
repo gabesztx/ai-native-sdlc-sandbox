@@ -214,7 +214,7 @@ nevekkel és kis függvényekkel legyen olvasható. Ez a frontendre felülírja 
 
 ## Amit a lint ellenőriz
 
-A `pnpm check` elbukik, ha sérül: `any` típus; hiányzó `public` / `private`;
+Az `npm run check` elbukik, ha sérül: `any` típus; hiányzó `public` / `private`;
 `protected`; import `rxjs/operators`-ból vagy `@angular/animations`-ből; OnPush
 hiánya; inline template / style; `*ngIf` / `*ngFor`; `@Input()` / `@Output()`.
 A pontos szabálylistát az app váza állítja be.

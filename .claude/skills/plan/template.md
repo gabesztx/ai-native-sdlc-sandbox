@@ -24,7 +24,7 @@
 
 ## Ellenőrzés
 
-- `pnpm check` zöld minden lépés után.
+- `npm run check` zöld minden lépés után.
 - <kézi ellenőrzés, ha kell: mit nézzen meg a verifier>
 
 ## Kockázatok

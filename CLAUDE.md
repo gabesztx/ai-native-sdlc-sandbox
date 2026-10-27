@@ -37,14 +37,14 @@ docs/changes/<id>-<slug>/ változásonként intent.md, spec.md, plan.md
 
 ## Parancsok (cél)
 
-- `pnpm check` — az egyetlen ellenőrző parancs: web lint + test + build, utána
+- `npm run check` — az egyetlen ellenőrző parancs: web lint + test + build, utána
   `./mvnw verify`. Ez a feedback loop.
-- `pnpm dev` — web és API helyi futtatása.
-- Egy teszt: `pnpm --filter web test -- <minta>` / `./mvnw -pl apps/api test -Dtest=<Osztály>`.
+- `npm run dev:web` és `npm run dev:api` — web és API helyi futtatása, két külön terminálban.
+- Egy teszt: `npm -w apps/web test -- <minta>` / `./mvnw -pl apps/api test -Dtest=<Osztály>`.
 
 ## Definition of done
 
-Soha ne jelents egy feladatot késznek, amíg a `pnpm check` nem zöld. Másold be az
+Soha ne jelents egy feladatot késznek, amíg az `npm run check` nem zöld. Másold be az
 eredmény összegző sorát. Ha piros, jelentsd a hibát — ne rejtsd el, ne hagyd ki, és ne
 gyengíts meg tesztet.
 
@@ -56,7 +56,7 @@ jóváhagyásig megáll, mielőtt a következő jönne.
 1. `/intent` → `docs/changes/<id>-<slug>/intent.md` — probléma, cél, nyitott kérdések
 2. `/spec`   → `spec.md` — viselkedés, API, adatmodell, elfogadási kritériumok
 3. `/plan`   → `plan.md` — sorrendbe tett lépések, érintett fájlok, tesztek. **Emberi jóváhagyási kapu.**
-4. Build — csak a `plan.md`-t valósítsd meg; futtasd a `pnpm check`-et; a verifier subagent megerősíti
+4. Build — csak a `plan.md`-t valósítsd meg; futtasd az `npm run check`-et; a verifier subagent megerősíti
 5. `/review` → párhuzamos reviewer subagentek, összefésülve a `REVIEW.md` szerint
 
 Triviális változás (elírás, konfig-módosítás) mehet egyből a 4. lépésre, de mondd ki,

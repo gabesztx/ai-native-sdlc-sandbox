@@ -24,7 +24,7 @@ ami nincs benne, az nem készül el.
 2. **Töltsd ki a [template.md](template.md) sablont**, és mentsd ide:
    `docs/changes/<id>-<slug>/plan.md`.
    - **Lépések:** kicsik és sorrendbe tettek; mindegyik után zöldnek kell maradnia a
-     `pnpm check`-nek. Lépésenként: mit, melyik fájlban, és melyik elfogadási
+     `npm run check`-nek. Lépésenként: mit, melyik fájlban, és melyik elfogadási
      kritériumot (`AC1`, `AC2` …) szolgálja.
    - **Tesztek:** minden elfogadási kritériumhoz legalább egy teszt, megnevezve a
      tesztfájlt. A teszt a hozzá tartozó kód előtt vagy vele együtt készül.
