@@ -1,0 +1,19 @@
+<h1>Értékeléseim</h1>
+<ul class="reviews">
+  @for (review of reviews(); track review.id) {
+    <li class="review">
+      @if (review.status === 'PENDING') {
+        <a class="topic" [routerLink]="['/reviews', review.id]">{{ review.topic }}</a>
+      } @else {
+        <span class="topic">{{ review.topic }}</span>
+      }
+      <span class="evaluated">{{ review.evaluatedMember.name }}</span>
+      <span class="status">{{ statusLabels[review.status] }}</span>
+      @if (review.submittedAt) {
+        <span class="time">{{ review.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
+      }
+    </li>
+  } @empty {
+    <li>Nincs kitöltendő értékelésed.</li>
+  }
+</ul>

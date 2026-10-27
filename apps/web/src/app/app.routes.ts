@@ -53,6 +53,26 @@ export const routes: Routes = [
           { path: '', pathMatch: 'full', redirectTo: 'forms' },
         ],
       },
+      {
+        path: 'reviews',
+        canActivate: [authGuard('MEMBER')],
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/reviews/review-list-page/review-list-page.component').then(
+                (m) => m.ReviewListPageComponent,
+              ),
+          },
+          {
+            path: ':id',
+            loadComponent: () =>
+              import('./features/reviews/review-fill-page/review-fill-page.component').then(
+                (m) => m.ReviewFillPageComponent,
+              ),
+          },
+        ],
+      },
       { path: '', pathMatch: 'full', canActivate: [homeRedirectGuard], children: [] },
     ],
   },

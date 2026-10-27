@@ -6,7 +6,7 @@ import { EMPTY, catchError, of, switchMap } from 'rxjs';
 import { FormDetail, FormResponse } from '../../../api/models';
 import { problemOf } from '../../../core/http/problem-detail';
 import { FormsApiService } from '../forms-api.service';
-import { FORM_STATUS_LABELS, REVIEW_STATUS_LABELS } from '../shared/status-labels';
+import { FORM_STATUS_LABELS, REVIEW_STATUS_LABELS } from '../../../shared/status-labels';
 
 @Component({
   selector: 'form-detail-page',
