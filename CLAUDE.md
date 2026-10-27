@@ -75,8 +75,6 @@ Trivial changes (typo, config tweak) may skip to step 4, but say that you are sk
 
 ## Conventions
 
-- Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `test:`).
-- Never commit directly to `main`; every change goes through a PR.
 - Code, comments, docs and commit messages in English.
 
 ## Boundaries
@@ -85,7 +83,7 @@ Trivial changes (typo, config tweak) may skip to step 4, but say that you are sk
 - Never edit a test to make it pass; fix the code, or report why the test is wrong.
 - Never edit an existing Flyway migration; add a new one.
 - Never commit secrets or `.env` files; never read `.env` files.
-- Never push to `main` or force-push.
+- Never force-push.
 
 ## Gotchas
 
