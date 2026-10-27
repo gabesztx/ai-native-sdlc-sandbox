@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { provideApiConfiguration } from '../../../api/api-configuration';
 import { adminTokens, memberTokens, storeSession } from '../../../../testing/auth-fixtures';
+import { provideUiTesting } from '../../../../testing/ui-providers';
 import { authInterceptor } from '../../auth/auth.interceptor';
 import { ShellComponent } from './shell.component';
 
@@ -15,6 +16,7 @@ async function render(): Promise<HTMLElement> {
       provideHttpClient(withInterceptors([authInterceptor])),
       provideHttpClientTesting(),
       provideApiConfiguration(''),
+      ...provideUiTesting(),
     ],
   });
   const fixture = TestBed.createComponent(ShellComponent);
@@ -38,6 +40,7 @@ async function renderAt(url: string): Promise<HTMLElement> {
       provideHttpClient(withInterceptors([authInterceptor])),
       provideHttpClientTesting(),
       provideApiConfiguration(''),
+      ...provideUiTesting(),
     ],
   });
   const fixture = TestBed.createComponent(ShellComponent);
