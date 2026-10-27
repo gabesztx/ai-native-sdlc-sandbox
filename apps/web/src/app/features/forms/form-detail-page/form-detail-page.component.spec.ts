@@ -26,7 +26,7 @@ describe('FormDetailPageComponent', () => {
     ]);
     const answers = Array.from(page.root().querySelectorAll('.answer')).map((dd) => dd.textContent?.trim());
     expect(answers).toEqual(['4', 'Több dokumentáció']);
-    expect(page.root().querySelector('.response h3')?.textContent).toContain('Minta Anna');
+    expect(page.root().querySelector('.response .response-name')?.textContent).toContain('Minta Anna');
     expect(page.root().querySelector('.send')).toBeNull();
   });
 

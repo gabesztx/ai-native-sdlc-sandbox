@@ -1,66 +1,160 @@
-<h1>{{ isEdit() ? 'Piszkozat szerkesztése' : 'Új űrlap' }}</h1>
-@if (generalError()) {
-  <p class="error" role="alert">{{ generalError() }}</p>
-}
-<form class="editor" [formGroup]="form" (ngSubmit)="onSave()">
-  <label for="topic">Fő téma</label>
-  <input id="topic" formControlName="topic" maxlength="200" />
-  @if (error('topic')) {
-    <span class="field-error">{{ error('topic') }}</span>
-  }
+<page-header
+  [title]="isEdit() ? 'Piszkozat szerkesztése' : 'Új űrlap'"
+  subtitle="Add meg a fő témát, az értékelt kollégát és a kérdéseket."
+/>
 
-  <label for="evaluated">Kit értékelnek?</label>
-  <select id="evaluated" formControlName="evaluatedMemberId">
-    <option [ngValue]="null" disabled>Válassz csapattagot</option>
-    @for (member of members(); track member.id) {
-      <option [ngValue]="member.id">{{ member.name }}</option>
-    }
-  </select>
-  @if (error('evaluatedMemberId')) {
-    <span class="field-error">{{ error('evaluatedMemberId') }}</span>
-  }
+@if (generalError()) {
+  <p-message severity="error" class="error">{{ generalError() }}</p-message>
+}
+
+<form class="editor" [formGroup]="form" (ngSubmit)="onSave()">
+  <p-card class="basics">
+    <div class="fields">
+      <div class="field">
+        <label for="topic">Fő téma</label>
+        <input
+          pInputText
+          id="topic"
+          formControlName="topic"
+          maxlength="200"
+          [fluid]="true"
+          [invalid]="isInvalid(form.controls.topic, 'topic')"
+          [attr.aria-invalid]="isInvalid(form.controls.topic, 'topic') ? 'true' : null"
+        />
+        @if (error('topic')) {
+          <p-message severity="error" variant="simple" size="small" class="field-error">{{ error('topic') }}</p-message>
+        }
+      </div>
+
+      <div class="field">
+        <label for="evaluated">Kit értékelnek?</label>
+        <p-select
+          inputId="evaluated"
+          formControlName="evaluatedMemberId"
+          placeholder="Válassz csapattagot"
+          optionLabel="name"
+          optionValue="id"
+          [options]="members()"
+          [fluid]="true"
+          [invalid]="isInvalid(form.controls.evaluatedMemberId, 'evaluatedMemberId')"
+        />
+        @if (error('evaluatedMemberId')) {
+          <p-message severity="error" variant="simple" size="small" class="field-error">
+            {{ error('evaluatedMemberId') }}
+          </p-message>
+        }
+      </div>
+    </div>
+  </p-card>
 
   <h2>Kérdések</h2>
   <ol class="questions" formArrayName="questions">
     @for (question of questions.controls; track question; let i = $index) {
-      <li class="question" [formGroupName]="i">
-        <label [for]="'question-text-' + i">Kérdés szövege</label>
-        <input [id]="'question-text-' + i" formControlName="text" maxlength="500" />
-        @if (error('questions[' + i + '].text')) {
-          <span class="field-error">{{ error('questions[' + i + '].text') }}</span>
-        }
-        <span class="question-type">
-          {{ question.controls.type.value === 'SCALE' ? 'Skála' : 'Szabad szöveg' }}
-        </span>
-        @if (question.controls.type.value === 'SCALE') {
-          <div class="scale">
-            <label [for]="'scale-min-' + i">Legkisebb</label>
-            <input [id]="'scale-min-' + i" type="number" formControlName="scaleMin" />
-            <label [for]="'scale-max-' + i">Legnagyobb</label>
-            <input [id]="'scale-max-' + i" type="number" formControlName="scaleMax" />
+      <li class="question" [formGroupName]="i" animate.enter="fade-in-up" animate.leave="collapse-out">
+        <p-card>
+          <div class="question-body">
+            <div class="question-head">
+              <span class="question-number">{{ i + 1 }}. kérdés</span>
+              <p-tag
+                class="question-type"
+                severity="secondary"
+                [value]="question.controls.type.value === 'SCALE' ? 'Skála' : 'Szabad szöveg'"
+              />
+              <span class="spacer"></span>
+              <button
+                pButton
+                type="button"
+                class="remove"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                [iconOnly]="true"
+                aria-label="Kérdés törlése"
+                (click)="onRemoveQuestion(i)"
+              >
+                <i pButtonIcon class="pi pi-trash"></i>
+              </button>
+            </div>
+
+            <div class="field">
+              <label [for]="'question-text-' + i">Kérdés szövege</label>
+              <input
+                pInputText
+                [id]="'question-text-' + i"
+                formControlName="text"
+                maxlength="500"
+                [fluid]="true"
+                [invalid]="isInvalid(question.controls.text, 'questions[' + i + '].text')"
+                [attr.aria-invalid]="isInvalid(question.controls.text, 'questions[' + i + '].text') ? 'true' : null"
+              />
+              @if (error('questions[' + i + '].text')) {
+                <p-message severity="error" variant="simple" size="small" class="field-error">
+                  {{ error('questions[' + i + '].text') }}
+                </p-message>
+              }
+            </div>
+
+            @if (question.controls.type.value === 'SCALE') {
+              <div class="scale">
+                <div class="field">
+                  <label [for]="'scale-min-' + i">Legkisebb</label>
+                  <p-inputnumber
+                    [inputId]="'scale-min-' + i"
+                    formControlName="scaleMin"
+                    [useGrouping]="false"
+                    [fluid]="true"
+                    [invalid]="error('questions[' + i + '].scaleMin') !== ''"
+                  />
+                </div>
+                <div class="field">
+                  <label [for]="'scale-max-' + i">Legnagyobb</label>
+                  <p-inputnumber
+                    [inputId]="'scale-max-' + i"
+                    formControlName="scaleMax"
+                    [useGrouping]="false"
+                    [fluid]="true"
+                    [invalid]="error('questions[' + i + '].scaleMax') !== ''"
+                  />
+                </div>
+              </div>
+              @if (error('questions[' + i + '].scaleMin') || error('questions[' + i + '].scaleMax')) {
+                <p-message severity="error" variant="simple" size="small" class="field-error">
+                  {{ error('questions[' + i + '].scaleMin') || error('questions[' + i + '].scaleMax') }}
+                </p-message>
+              }
+            }
+
+            <div class="toggle">
+              <p-toggleswitch [inputId]="'question-required-' + i" formControlName="required" />
+              <label [for]="'question-required-' + i">Kötelező</label>
+            </div>
           </div>
-          @if (error('questions[' + i + '].scaleMin') || error('questions[' + i + '].scaleMax')) {
-            <span class="field-error">
-              {{ error('questions[' + i + '].scaleMin') || error('questions[' + i + '].scaleMax') }}
-            </span>
-          }
-        }
-        <label class="checkbox">
-          <input type="checkbox" formControlName="required" />
-          Kötelező
-        </label>
-        <button type="button" class="remove" (click)="onRemoveQuestion(i)">Kérdés törlése</button>
+        </p-card>
       </li>
     }
   </ol>
+
   <div class="actions">
-    <button type="button" class="add-scale" (click)="onAddQuestion('SCALE')">+ Skálás kérdés</button>
-    <button type="button" class="add-text" (click)="onAddQuestion('TEXT')">+ Szöveges kérdés</button>
+    <button pButton type="button" class="add-scale" severity="secondary" [outlined]="true" (click)="onAddQuestion('SCALE')">
+      <i pButtonIcon class="pi pi-sliders-h"></i>
+      <span pButtonLabel>+ Skálás kérdés</span>
+    </button>
+    <button pButton type="button" class="add-text" severity="secondary" [outlined]="true" (click)="onAddQuestion('TEXT')">
+      <i pButtonIcon class="pi pi-align-left"></i>
+      <span pButtonLabel>+ Szöveges kérdés</span>
+    </button>
   </div>
-  <div class="actions">
-    <button type="submit" class="save">Mentés piszkozatként</button>
+
+  <div class="actions footer">
+    <button pButton type="submit" class="save" [loading]="saving()">
+      <i pButtonIcon class="pi pi-save"></i>
+      <span pButtonLabel>Mentés piszkozatként</span>
+    </button>
     @if (isEdit()) {
-      <button type="button" class="delete" (click)="onDelete()">Törlés</button>
+      <button pButton type="button" class="delete" severity="danger" [outlined]="true" [loading]="deleting()" (click)="onDelete()">
+        <i pButtonIcon class="pi pi-trash"></i>
+        <span pButtonLabel>Törlés</span>
+      </button>
     }
   </div>
 </form>

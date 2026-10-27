@@ -1,26 +1,47 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map } from 'rxjs';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Badge } from 'primeng/badge';
+import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { MemberAvatarComponent } from '../../../shared/ui/member-avatar/member-avatar.component';
+import { ThemeToggleComponent } from '../../../shared/ui/theme-toggle/theme-toggle.component';
 import { AuthApiService } from '../../auth/auth-api.service';
 import { AuthStoreService } from '../../auth/auth-store.service';
+import { BreakpointService } from '../breakpoint.service';
+import { MenuBadgesService } from '../menu-badges.service';
 
 interface MenuItem {
   label: string;
   path: string;
+  icon: string;
+  badgeUnit?: string;
 }
 
 const ADMIN_MENU: MenuItem[] = [
-  { label: 'Űrlapok', path: '/admin/forms' },
-  { label: 'Új űrlap', path: '/admin/forms/new' },
-  { label: 'Csapattagok', path: '/admin/team' },
+  { label: 'Űrlapok', path: '/admin/forms', icon: 'pi pi-file', badgeUnit: 'piszkozat' },
+  { label: 'Új űrlap', path: '/admin/forms/new', icon: 'pi pi-plus' },
+  { label: 'Csapattagok', path: '/admin/team', icon: 'pi pi-users' },
 ];
 
-const MEMBER_MENU: MenuItem[] = [{ label: 'Értékeléseim', path: '/reviews' }];
+const MEMBER_MENU: MenuItem[] = [
+  { label: 'Értékeléseim', path: '/reviews', icon: 'pi pi-inbox', badgeUnit: 'kitöltendő' },
+];
 
 @Component({
   selector: 'shell',
-  imports: [RouterOutlet, RouterLink],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    NgTemplateOutlet,
+    Badge,
+    ButtonDirective,
+    ButtonIcon,
+    ButtonLabel,
+    MemberAvatarComponent,
+    ThemeToggleComponent,
+  ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
@@ -28,9 +49,15 @@ export class ShellComponent {
   private store = inject(AuthStoreService);
   private authApi = inject(AuthApiService);
   private router = inject(Router);
+  private badges = inject(MenuBadgesService);
 
+  public isMobile = inject(BreakpointService).isMobile;
   public userName = computed(() => this.store.me()?.name ?? '');
   public menu = computed(() => (this.store.role() === 'ADMIN' ? ADMIN_MENU : MEMBER_MENU));
+  public showBottomNav = computed(() => this.isMobile() && this.menu().length > 1);
+  public headerBadgeItem = computed(() =>
+    this.isMobile() && !this.showBottomNav() ? (this.menu().find((item) => item.badgeUnit) ?? null) : null,
+  );
 
   private currentUrl = toSignal(
     this.router.events.pipe(
@@ -54,6 +81,11 @@ export class ShellComponent {
         null,
       )?.path;
   });
+
+  public badgeCount(item: MenuItem): number | null {
+    const count = this.badges.count();
+    return item.badgeUnit && count !== null && count > 0 ? count : null;
+  }
 
   public onLogout(): void {
     const refreshToken = this.store.refreshToken();

@@ -1,15 +1,86 @@
-<header class="shell-header">
-  <span class="brand">HUGO Feature Request Board</span>
-  <nav class="menu" aria-label="Fő navigáció">
-    @for (item of menu(); track item.path) {
-      <a class="menu-item" [class.active]="activePath() === item.path" [routerLink]="item.path">{{
-        item.label
-      }}</a>
-    }
-  </nav>
-  <span class="user-name">{{ userName() }}</span>
-  <button type="button" class="logout" (click)="onLogout()">Kilépés</button>
-</header>
-<main class="shell-main">
-  <router-outlet />
-</main>
+<ng-template #menuItems let-variant>
+  @for (item of menu(); track item.path) {
+    <a
+      class="menu-item"
+      [class.bottom]="variant === 'bottom'"
+      [class.active]="activePath() === item.path"
+      [attr.aria-current]="activePath() === item.path ? 'page' : null"
+      [routerLink]="item.path"
+    >
+      <i class="menu-icon" [class]="item.icon" aria-hidden="true"></i>
+      <span class="menu-label">{{ item.label }}</span>
+      @if (badgeCount(item); as count) {
+        <p-badge class="menu-badge" [value]="count" aria-hidden="true" />
+        <span class="sr-only">{{ count }} {{ item.badgeUnit }}</span>
+      }
+    </a>
+  }
+</ng-template>
+
+<div class="shell" [class.mobile]="isMobile()" [class.with-bottom-nav]="showBottomNav()">
+  @if (isMobile()) {
+    <header class="mobile-header">
+      <span class="brand">
+        <span class="brand-name">HUGO Board</span>
+      </span>
+      @if (headerBadgeItem(); as item) {
+        @if (badgeCount(item); as count) {
+          <p-badge [value]="count" aria-hidden="true" />
+          <span class="sr-only">{{ count }} {{ item.badgeUnit }}</span>
+        }
+      }
+      <span class="spacer"></span>
+      <member-avatar [name]="userName()" />
+      <span class="sr-only user-name">{{ userName() }}</span>
+      <theme-toggle [compact]="true" />
+      <button
+        pButton
+        type="button"
+        class="logout"
+        severity="secondary"
+        [text]="true"
+        [rounded]="true"
+        [iconOnly]="true"
+        aria-label="Kilépés"
+        (click)="onLogout()"
+      >
+        <i pButtonIcon class="pi pi-sign-out"></i>
+      </button>
+    </header>
+  } @else {
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-text">
+          <span class="brand-name">HUGO</span>
+          <span class="brand-sub">Feature Request Board</span>
+        </span>
+      </div>
+      <nav class="menu" aria-label="Fő navigáció">
+        <ng-container [ngTemplateOutlet]="menuItems" [ngTemplateOutletContext]="{ $implicit: 'side' }" />
+      </nav>
+      <div class="account">
+        <div class="user">
+          <member-avatar [name]="userName()" />
+          <span class="user-name">{{ userName() }}</span>
+        </div>
+        <theme-toggle />
+        <button pButton type="button" class="logout" severity="secondary" [outlined]="true" (click)="onLogout()">
+          <i pButtonIcon class="pi pi-sign-out"></i>
+          <span pButtonLabel>Kilépés</span>
+        </button>
+      </div>
+    </aside>
+  }
+
+  <main class="content">
+    <div class="content-inner">
+      <router-outlet />
+    </div>
+  </main>
+
+  @if (showBottomNav()) {
+    <nav class="bottom-nav" aria-label="Fő navigáció">
+      <ng-container [ngTemplateOutlet]="menuItems" [ngTemplateOutletContext]="{ $implicit: 'bottom' }" />
+    </nav>
+  }
+</div>

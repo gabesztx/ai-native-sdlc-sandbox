@@ -1,27 +1,57 @@
 :host {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  gap: 2rem;
+  min-height: 100vh;
+  padding: 4rem 1rem 2rem;
+}
+
+.corner {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
 }
 
 .login-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
   justify-content: center;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 .login-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 18rem;
-  padding: 1.5rem;
-  border: 1px solid #d0d7de;
-  border-radius: 0.5rem;
+  flex: 0 1 22rem;
+  min-width: 0;
 }
 
-.error {
-  color: #b42318;
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  label {
+    font-weight: 600;
+  }
+
+  p-button {
+    margin-top: 0.75rem;
+  }
 }

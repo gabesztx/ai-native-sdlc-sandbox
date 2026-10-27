@@ -1,0 +1,11 @@
+<p-card>
+  <div class="tile">
+    <span class="label">
+      @if (icon()) {
+        <i [class]="icon()" aria-hidden="true"></i>
+      }
+      {{ label() }}
+    </span>
+    <strong class="value">{{ value() }}</strong>
+  </div>
+</p-card>

@@ -1,8 +1,26 @@
-<h1>Csapattagok</h1>
-<ul class="member-list">
-  @for (member of members(); track member.id) {
-    <li class="member">{{ member.name }}</li>
-  } @empty {
-    <li class="empty">Nincs csapattag.</li>
-  }
-</ul>
+<page-header title="Csapattagok" subtitle="A HUGO csapat tagjai, akiket értékelni lehet." />
+
+@if (loading()) {
+  <div class="member-list">
+    @for (row of skeletonRows; track row) {
+      <p-skeleton class="member-card" height="4.25rem" />
+    }
+  </div>
+} @else {
+  <ul class="member-list">
+    @for (member of members(); track member.id) {
+      <li class="member-card stagger-item">
+        <p-card>
+          <div class="member-row">
+            <member-avatar size="large" [name]="member.name" />
+            <span class="member">{{ member.name }}</span>
+          </div>
+        </p-card>
+      </li>
+    } @empty {
+      <li class="empty">
+        <empty-state icon="pi pi-users" message="Nincs csapattag." />
+      </li>
+    }
+  </ul>
+}

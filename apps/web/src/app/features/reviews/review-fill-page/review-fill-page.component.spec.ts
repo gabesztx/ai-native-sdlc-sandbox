@@ -1,8 +1,8 @@
-import { createPage } from '../../../../testing/http-test-setup';
+import { PageHarness, createPage } from '../../../../testing/http-test-setup';
 import { pendingReview, reviewSummary } from '../../../../testing/review-fixtures';
 import { ReviewFillPageComponent } from './review-fill-page.component';
 
-async function openPending() {
+async function openPending(): Promise<PageHarness<ReviewFillPageComponent>> {
   const page = createPage(ReviewFillPageComponent, { id: '21' });
   await page.fixture.whenStable();
   page.backend.expectOne('/api/me/reviews/21').flush(pendingReview());
@@ -10,12 +10,12 @@ async function openPending() {
   return page;
 }
 
-function chooseScale(root: HTMLElement, value: string): void {
-  const options = Array.from(root.querySelectorAll('.scale-option')) as HTMLLabelElement[];
-  const option = options.find((label) => label.textContent?.trim() === value);
-  const radio = option?.querySelector('input[type="radio"]') as HTMLInputElement;
-  radio.click();
-  expect(radio.checked).toBe(true);
+async function chooseScale(page: PageHarness<ReviewFillPageComponent>, value: string): Promise<void> {
+  const options = Array.from(page.root().querySelectorAll('.scale p-togglebutton')) as HTMLElement[];
+  const option = options.find((button) => button.getAttribute('aria-label') === value);
+  option?.click();
+  await page.fixture.whenStable();
+  expect(option?.getAttribute('aria-pressed')).toBe('true');
 }
 
 function typeAnswer(root: HTMLElement, index: number, text: string): void {
@@ -28,7 +28,7 @@ describe('ReviewFillPageComponent', () => {
   it('AC44: kitöltés és beküldés után a kitöltött válaszokat küldi, és az Értékeléseim oldalra visz', async () => {
     const page = await openPending();
 
-    chooseScale(page.root(), '4');
+    await chooseScale(page, '4');
     typeAnswer(page.root(), 0, '  Több dokumentáció  ');
     (page.root().querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
 
@@ -46,7 +46,7 @@ describe('ReviewFillPageComponent', () => {
   it('kötelező válasz hiányában nem küld kérést, és jelzi a hibát', async () => {
     const page = await openPending();
 
-    chooseScale(page.root(), '3');
+    await chooseScale(page, '3');
     (page.root().querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
     await page.fixture.whenStable();
 
@@ -56,7 +56,7 @@ describe('ReviewFillPageComponent', () => {
 
   it('a szerver kérdésenkénti hibáját a kérdésnél mutatja', async () => {
     const page = await openPending();
-    chooseScale(page.root(), '5');
+    await chooseScale(page, '5');
     typeAnswer(page.root(), 0, 'ok');
     (page.root().querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
 

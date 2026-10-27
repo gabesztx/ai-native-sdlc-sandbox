@@ -22,7 +22,7 @@ describe('ReviewListPageComponent', () => {
     await page.fixture.whenStable();
 
     const review = page.root().querySelector('.review') as HTMLElement;
-    expect(review.querySelector('a.topic')?.getAttribute('href')).toBe('/reviews/21');
+    expect(review.querySelector('a.fill')?.getAttribute('href')).toBe('/reviews/21');
     expect(review.querySelector('.status')?.textContent).toContain('Kitöltendő');
     expect(review.querySelector('.evaluated')?.textContent).toContain('Teszt Elek');
   });

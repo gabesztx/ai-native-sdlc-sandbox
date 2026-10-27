@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { provideApiConfiguration } from '../../../api/api-configuration';
 import { adminTokens, memberTokens } from '../../../../testing/auth-fixtures';
+import { provideUiTesting } from '../../../../testing/ui-providers';
 import { LoginPageComponent } from './login-page.component';
 
 describe('LoginPageComponent', () => {
@@ -15,7 +16,7 @@ describe('LoginPageComponent', () => {
     sessionStorage.clear();
     TestBed.configureTestingModule({
       imports: [LoginPageComponent],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), provideApiConfiguration('')],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), provideApiConfiguration(''), ...provideUiTesting()],
     });
     backend = TestBed.inject(HttpTestingController);
     navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
@@ -37,10 +38,16 @@ describe('LoginPageComponent', () => {
     input.dispatchEvent(new Event('input'));
   }
 
-  it('AC43: a kezdőoldalon látszik az admin belépés és a kolléga választó', () => {
+  async function memberOptions(): Promise<HTMLElement[]> {
+    (root().querySelector('#member-select') as HTMLElement).click();
+    await fixture.whenStable();
+    return Array.from(document.querySelectorAll('[role="option"]')) as HTMLElement[];
+  }
+
+  it('AC43: a kezdőoldalon látszik az admin belépés és a kolléga választó', async () => {
     expect(root().querySelector('#admin-email')).not.toBeNull();
     expect(root().querySelector('#admin-password')).not.toBeNull();
-    const options = Array.from(root().querySelectorAll('#member-select option')).map((o) => o.textContent);
+    const options = (await memberOptions()).map((o) => o.textContent?.trim());
     expect(options).toContain('Teszt Elek');
     expect(options).toContain('Minta Anna');
   });
@@ -48,7 +55,7 @@ describe('LoginPageComponent', () => {
   it('AC50: sikeres admin belépés után az Űrlapok oldalra visz', async () => {
     type('#admin-email', 'admin@test.local');
     type('#admin-password', 'secret');
-    (root().querySelectorAll('form')[0] as HTMLFormElement).dispatchEvent(new Event('submit'));
+    (root().querySelector('form.admin-login') as HTMLFormElement).dispatchEvent(new Event('submit'));
 
     const login = backend.expectOne('/api/auth/admin/login');
     expect(login.request.body).toEqual({ email: 'admin@test.local', password: 'secret' });
@@ -59,10 +66,8 @@ describe('LoginPageComponent', () => {
   });
 
   it('AC50: sikeres kolléga belépés után az Értékeléseim oldalra visz', async () => {
-    const select = root().querySelector('#member-select') as HTMLSelectElement;
-    select.value = select.options[1].value;
-    select.dispatchEvent(new Event('change'));
-    (root().querySelectorAll('form')[1] as HTMLFormElement).dispatchEvent(new Event('submit'));
+    (await memberOptions())[0].click();
+    (root().querySelector('form.member-login') as HTMLFormElement).dispatchEvent(new Event('submit'));
 
     const login = backend.expectOne('/api/auth/member/login');
     expect(login.request.body).toEqual({ memberId: 3 });
@@ -74,7 +79,7 @@ describe('LoginPageComponent', () => {
   it('hibás admin adatoknál általános hibaüzenet jelenik meg', async () => {
     type('#admin-email', 'admin@test.local');
     type('#admin-password', 'wrong');
-    (root().querySelectorAll('form')[0] as HTMLFormElement).dispatchEvent(new Event('submit'));
+    (root().querySelector('form.admin-login') as HTMLFormElement).dispatchEvent(new Event('submit'));
 
     backend.expectOne('/api/auth/admin/login').flush(null, { status: 401, statusText: 'Unauthorized' });
     await fixture.whenStable();

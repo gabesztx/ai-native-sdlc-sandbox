@@ -1,5 +1,6 @@
 import { TEAM, draftForm } from '../../../../testing/form-fixtures';
 import { createPage, setValue } from '../../../../testing/http-test-setup';
+import { chooseOption, confirmDialogButton, renderConfirmDialog } from '../../../../testing/primeng-helpers';
 import { FormEditorPageComponent } from './form-editor-page.component';
 
 describe('FormEditorPageComponent', () => {
@@ -9,8 +10,7 @@ describe('FormEditorPageComponent', () => {
     await page.fixture.whenStable();
 
     setValue(page.root(), '#topic', 'Csapatmunka Q4');
-    const evaluated = page.root().querySelector('#evaluated') as HTMLSelectElement;
-    setValue(page.root(), '#evaluated', evaluated.options[1].value);
+    await chooseOption(page.fixture, '#evaluated', 'Teszt Elek');
     (page.root().querySelector('.add-scale') as HTMLButtonElement).click();
     (page.root().querySelector('.add-text') as HTMLButtonElement).click();
     await page.fixture.whenStable();
@@ -37,7 +37,7 @@ describe('FormEditorPageComponent', () => {
     page.backend.expectOne('/api/admin/team-members').flush(TEAM);
     await page.fixture.whenStable();
     setValue(page.root(), '#topic', 'T');
-    setValue(page.root(), '#evaluated', (page.root().querySelector('#evaluated') as HTMLSelectElement).options[1].value);
+    await chooseOption(page.fixture, '#evaluated', 'Teszt Elek');
     (page.root().querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
 
     page.backend
@@ -54,6 +54,7 @@ describe('FormEditorPageComponent', () => {
 
   it('piszkozat szerkesztésekor betölti az adatokat, és megerősítés után törli', async () => {
     const page = createPage(FormEditorPageComponent, { id: '7' });
+    const dialog = renderConfirmDialog();
     page.backend.expectOne('/api/admin/team-members').flush(TEAM);
     await page.fixture.whenStable();
     page.backend.expectOne('/api/admin/forms/7').flush(draftForm());
@@ -62,8 +63,8 @@ describe('FormEditorPageComponent', () => {
     expect((page.root().querySelector('#topic') as HTMLInputElement).value).toBe('Csapatmunka Q4');
     expect((page.root().querySelector('#question-text-1') as HTMLInputElement).value).toBe('Miben fejlődhetne?');
 
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     (page.root().querySelector('.delete') as HTMLButtonElement).click();
+    (await confirmDialogButton(dialog, 'Törlés')).click();
     const del = page.backend.expectOne('/api/admin/forms/7');
     expect(del.request.method).toBe('DELETE');
     del.flush(null, { status: 204, statusText: 'No Content' });

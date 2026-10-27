@@ -1,36 +1,89 @@
-<div class="page-header">
-  <h1>Űrlapok</h1>
-  <a class="primary" routerLink="/admin/forms/new">Új űrlap</a>
-</div>
-<table class="form-table">
-  <thead>
-    <tr>
-      <th scope="col">Fő téma</th>
-      <th scope="col">Értékelt</th>
-      <th scope="col">Állapot</th>
-      <th scope="col">Beküldve</th>
-      <th scope="col">Létrehozva</th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (form of forms(); track form.id) {
-      <tr class="form-row">
-        <td><a [routerLink]="['/admin/forms', form.id]">{{ form.topic }}</a></td>
-        <td>{{ form.evaluatedMember.name }}</td>
-        <td class="status">{{ statusLabels[form.status] }}</td>
-        <td class="counts">
-          @if (form.status === 'SENT') {
-            {{ form.submittedCount }} / {{ form.recipientCount }}
-          } @else {
-            –
-          }
-        </td>
-        <td>{{ form.createdAt | date: 'yyyy.MM.dd HH:mm' }}</td>
-      </tr>
-    } @empty {
-      <tr>
-        <td colspan="5">Még nincs űrlap.</td>
-      </tr>
+<page-header title="Űrlapok" subtitle="A csapat értékelő űrlapjai és a kitöltöttségük.">
+  <a pButton routerLink="/admin/forms/new">
+    <i pButtonIcon class="pi pi-plus"></i>
+    <span pButtonLabel>Új űrlap</span>
+  </a>
+</page-header>
+
+<div class="stats">
+  @if (loading()) {
+    @for (row of skeletonRows; track row) {
+      <p-skeleton class="stat" height="5.75rem" />
     }
-  </tbody>
-</table>
+  } @else {
+    <stat-tile class="stat stagger-item" label="Összes űrlap" icon="pi pi-folder" [value]="stats().total" />
+    <stat-tile class="stat stagger-item" label="Piszkozat" icon="pi pi-pencil" [value]="stats().drafts" />
+    <stat-tile class="stat stagger-item" label="Kiküldve" icon="pi pi-send" [value]="stats().sent" />
+    <stat-tile class="stat stagger-item" label="Beküldött kitöltések" icon="pi pi-check-circle" [value]="stats().submitted" />
+  }
+</div>
+
+<ng-template #progressCell let-form>
+  @if (form.status === 'SENT') {
+    <div class="progress">
+      <p-progressbar class="progress-bar" [value]="progress(form)" [showValue]="false" />
+      <span class="counts">{{ form.submittedCount }} / {{ form.recipientCount }}</span>
+    </div>
+  } @else {
+    <span class="counts">–</span>
+  }
+</ng-template>
+
+@if (loading()) {
+  <div class="skeleton-list">
+    @for (row of skeletonRows; track row) {
+      <p-skeleton height="3rem" />
+    }
+  </div>
+} @else if (forms()?.length === 0) {
+  <empty-state icon="pi pi-file" message="Még nincs űrlap.">
+    <a pButton routerLink="/admin/forms/new">
+      <i pButtonIcon class="pi pi-plus"></i>
+      <span pButtonLabel>Új űrlap</span>
+    </a>
+  </empty-state>
+} @else if (isMobile()) {
+  <div class="card-list">
+    @for (form of forms(); track form.id) {
+      <p-card
+        class="form-row stagger-item"
+        tabindex="0"
+        [attr.aria-label]="form.topic"
+        (click)="onOpen(form)"
+        (keydown.enter)="onOpen(form)"
+      >
+        <div class="card-body">
+          <div class="card-top">
+            <strong class="topic">{{ form.topic }}</strong>
+            <status-tag class="status" [status]="form.status" />
+          </div>
+          <span class="muted">{{ form.evaluatedMember.name }} · {{ form.createdAt | date: 'yyyy.MM.dd HH:mm' }}</span>
+          <ng-container [ngTemplateOutlet]="progressCell" [ngTemplateOutletContext]="{ $implicit: form }" />
+        </div>
+      </p-card>
+    }
+  </div>
+} @else {
+  <p-card class="table-card">
+    <p-table [value]="forms() ?? []" [rowHover]="true" dataKey="id">
+      <ng-template #header>
+        <tr>
+          <th scope="col">Fő téma</th>
+          <th scope="col">Értékelt</th>
+          <th scope="col">Állapot</th>
+          <th scope="col">Beküldve</th>
+          <th scope="col">Létrehozva</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-form>
+        <tr class="form-row stagger-item" tabindex="0" (click)="onOpen(form)" (keydown.enter)="onOpen(form)">
+          <td><strong>{{ form.topic }}</strong></td>
+          <td>{{ form.evaluatedMember.name }}</td>
+          <td class="status"><status-tag [status]="form.status" /></td>
+          <td><ng-container [ngTemplateOutlet]="progressCell" [ngTemplateOutletContext]="{ $implicit: form }" /></td>
+          <td class="muted">{{ form.createdAt | date: 'yyyy.MM.dd HH:mm' }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+}

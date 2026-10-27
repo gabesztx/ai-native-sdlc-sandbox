@@ -1,0 +1,63 @@
+$duration-fast: 150ms;
+$duration-base: 200ms;
+$duration-slow: 300ms;
+$easing-standard: cubic-bezier(0.2, 0, 0, 1);
+$stagger-step: 40ms;
+$stagger-limit: 10;
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@keyframes collapse-out {
+  from {
+    height: auto;
+    opacity: 1;
+  }
+
+  to {
+    height: 0;
+    opacity: 0;
+    margin-block: 0;
+    padding-block: 0;
+    transform: scale(0.98);
+  }
+}
+
+.fade-in-up {
+  animation: fade-in-up $duration-slow $easing-standard both;
+}
+
+.collapse-out {
+  overflow: hidden;
+  animation: collapse-out $duration-base $easing-standard forwards;
+}
+
+.stagger-item {
+  animation: fade-in-up $duration-slow $easing-standard both;
+
+  @for $index from 1 through $stagger-limit {
+    &:nth-child(#{$index}) {
+      animation-delay: ($index - 1) * $stagger-step;
+    }
+  }
+
+  &:nth-child(n + #{$stagger-limit + 1}) {
+    animation-delay: $stagger-limit * $stagger-step;
+  }
+}

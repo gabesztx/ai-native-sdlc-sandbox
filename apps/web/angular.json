@@ -55,6 +55,8 @@
               }
             ],
             "styles": [
+              "@fontsource-variable/manrope/index.css",
+              "primeicons/primeicons.css",
               "src/styles.scss"
             ]
           },
@@ -98,7 +100,10 @@
           }
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "setupFiles": ["src/testing/jsdom-polyfills.ts"]
+          }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
