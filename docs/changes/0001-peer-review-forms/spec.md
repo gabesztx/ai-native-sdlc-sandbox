@@ -42,8 +42,13 @@ mindkét oldalon látszik, a válaszokat csak az admin látja.
   felhasznált refresh token újbóli használata `401`.
 - Ha a refresh token is lejárt vagy érvénytelen, a felhasználó a kezdőoldalra kerül, és
   újra be kell lépnie.
-- **Kilépéskor** a backend mindkét tokent azonnal érvényteleníti, a frontend törli őket
-  a sessionStorage-ból.
+- **Kilépéskor** a kilépés bizonyítéka maga a **refresh token**, nem az access token:
+  a backend ez alapján azonosítja és azonnal érvényteleníti a munkamenetet (mindkét
+  tokent), akkor is, ha az access token közben már lejárt. Így a kilépés `Authorization`
+  fejléc nélkül, csak a refresh tokennel is működik. A frontend a válasz után törli a
+  tokeneket a sessionStorage-ból.
+- Ha a kilépéskor küldött refresh token ismeretlen (már korábban kilépett, vagy sosem
+  létezett), a kilépés akkor is **sikeres** (`204`): nincs mit érvényteleníteni.
 - A tokeneket a backend csak hash-elve tárolja, és soha nem naplózza.
 
 ### Navigáció
@@ -132,7 +137,9 @@ menüpontjaival, a bejelentkezett felhasználó nevével és a **Kilépés** gom
 - **Kolléga belépés nem létező felhasználóval:** sikertelen, hibaüzenet.
 - **Belépés nélküli vagy lejárt / érvénytelen access tokennel érkező hívás:** `401`.
   A felület egyszer megpróbálja frissíteni a tokent; ha nem sikerül, a kezdőoldalra visz.
-- **Lejárt, érvénytelen vagy már felhasznált refresh token:** `401`.
+- **Lejárt, érvénytelen vagy már felhasznált refresh token a `/refresh` hívásban:**
+  `401`. (A `/logout` ettől eltér: ott az ismeretlen vagy már érvénytelen refresh token
+  is `204`-et ad, mert a kilépés célja — a munkamenet megszűnése — enélkül is teljesül.)
 - **Kolléga admin-funkciót hív:** elutasítva (`403`).
 - **Kolléga más kitöltését kéri vagy küldi be:** úgy viselkedik, mintha nem létezne
   (`404`), hogy ne derüljön ki, létezik-e.
@@ -169,7 +176,7 @@ fejléc azonosítja; süti nincs. A hibák egységes formában jönnek
 | `POST` | `/api/auth/admin/login` | `{ email, password }` | `200` + `AuthTokens` | `400`, `401` |
 | `POST` | `/api/auth/member/login` | `{ memberId }` | `200` + `AuthTokens` | `400`, `404` |
 | `POST` | `/api/auth/refresh` | `{ refreshToken }` | `200` + `AuthTokens` (új pár) | `400`, `401` |
-| `POST` | `/api/auth/logout` | `{ refreshToken }` + Bearer | `204` | `401` |
+| `POST` | `/api/auth/logout` | `{ refreshToken }` | `204` | `400` |
 | `GET` | `/api/auth/me` | Bearer | `200` + `Me` | `401` |
 
 ### Admin
