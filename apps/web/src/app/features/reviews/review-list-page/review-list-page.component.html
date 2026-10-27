@@ -1,19 +1,46 @@
-<h1>Értékeléseim</h1>
-<ul class="reviews">
-  @for (review of reviews(); track review.id) {
-    <li class="review">
-      @if (review.status === 'PENDING') {
-        <a class="topic" [routerLink]="['/reviews', review.id]">{{ review.topic }}</a>
-      } @else {
-        <span class="topic">{{ review.topic }}</span>
-      }
-      <span class="evaluated">{{ review.evaluatedMember.name }}</span>
-      <span class="status">{{ statusLabels[review.status] }}</span>
-      @if (review.submittedAt) {
-        <span class="time">{{ review.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
-      }
-    </li>
-  } @empty {
-    <li>Nincs kitöltendő értékelésed.</li>
+<page-header title="Értékeléseim" subtitle="A neked küldött értékelő űrlapok." />
+
+<div class="stats">
+  @if (loading()) {
+    <p-skeleton class="stat" height="5.75rem" />
+    <p-skeleton class="stat" height="5.75rem" />
+  } @else {
+    <stat-tile class="stat stagger-item" label="Kitöltendő" icon="pi pi-inbox" [value]="stats().pending" />
+    <stat-tile class="stat stagger-item" label="Beküldve" icon="pi pi-check-circle" [value]="stats().submitted" />
   }
-</ul>
+</div>
+
+@if (loading()) {
+  <div class="review-list">
+    @for (row of skeletonRows; track row) {
+      <p-skeleton height="5rem" />
+    }
+  </div>
+} @else if (reviews()?.length === 0) {
+  <empty-state icon="pi pi-inbox" message="Nincs kitöltendő értékelésed." />
+} @else {
+  <ul class="review-list">
+    @for (review of reviews(); track review.id) {
+      <li class="review stagger-item">
+        <p-card>
+          <div class="review-row">
+            <div class="review-info">
+              <strong class="topic">{{ review.topic }}</strong>
+              <span class="evaluated muted">{{ review.evaluatedMember.name }}</span>
+            </div>
+            <status-tag class="status" [status]="review.status" />
+            @if (review.submittedAt) {
+              <span class="time muted">{{ review.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
+            }
+            @if (review.status === 'PENDING') {
+              <a pButton class="fill" [routerLink]="['/reviews', review.id]">
+                <i pButtonIcon class="pi pi-pencil"></i>
+                <span pButtonLabel>Kitöltés</span>
+              </a>
+            }
+          </div>
+        </p-card>
+      </li>
+    }
+  </ul>
+}
