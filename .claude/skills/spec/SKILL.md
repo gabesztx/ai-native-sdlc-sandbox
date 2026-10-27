@@ -24,6 +24,8 @@ ellenőrizhetően. A belső megvalósítás (osztályok, fájlok, lépések) a `
 2. **Töltsd ki a [template.md](template.md) sablont**, és mentsd ide:
    `docs/changes/<id>-<slug>/spec.md`.
    - **Viselkedés:** felhasználói szemszögből, lépésenként, a hibaesetekkel együtt.
+   - **Felület:** csak ha a változás a web-felületet érinti (elrendezés, komponensek és
+     állapotaik, reszponzivitás, animáció); különben „Nincs felületi hatás.”
    - **API:** végpontonként metódus, út, kérés, válasz, hibakódok. Ez lesz az
      OpenAPI-szerződés alapja.
    - **Adatmodell:** táblák, oszlopok, típusok, kötelezőség, kapcsolatok. Csak az új

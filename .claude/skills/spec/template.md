@@ -21,6 +21,20 @@
 - <érvénytelen bemenet → mit lát a felhasználó>
 - <nem létező erőforrás → …>
 
+## Felület
+
+<Csak akkor kell kitölteni, ha a változás web-felületet érint vagy módosít. Ha nem,
+írd: "Nincs felületi hatás.">
+
+- **Elrendezés:** <oldalszerkezet, navigáció, új vagy változó képernyők>
+- **Komponensek:** <mely UI-elemek jelennek meg, milyen állapotokkal (üres, hiba,
+  betöltés, kitöltött)>
+- **Reszponzivitás:** <mobil/asztali eltérések, töréspontok>
+- **Animáció:** <mely állapotváltásokhoz tartozik animáció, milyen jellegű — a projekt
+  szabálya szerint csak CSS-alapú>
+- **Design tokenek:** <szín, tipográfia, térköz — csak ha a change design rendszert
+  vezet be vagy módosít>
+
 ## API
 
 | Metódus | Út | Kérés | Válasz | Hibák |
