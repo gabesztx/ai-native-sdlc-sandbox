@@ -7,10 +7,6 @@ spring:
     hikari:
       maximum-pool-size: 1
 
-springdoc:
-  writer-with-order-by-keys: true
-  writer-with-default-pretty-printer: true
-
 hugo:
   admin:
     email: ${HUGO_ADMIN_EMAIL:}

@@ -1,15 +1,17 @@
 package com.hugoboard.review;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import com.hugoboard.form.Question;
 import com.hugoboard.user.TeamMember;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 public record ReviewDetail(
-		long id,
-		String topic,
-		TeamMember evaluatedMember,
-		@Schema(allowableValues = { "PENDING", "SUBMITTED" }) String status,
+		@Schema(requiredMode = REQUIRED) long id,
+		@Schema(requiredMode = REQUIRED) String topic,
+		@Schema(requiredMode = REQUIRED) TeamMember evaluatedMember,
+		@Schema(requiredMode = REQUIRED, allowableValues = { "PENDING", "SUBMITTED" }) String status,
 		String submittedAt,
-		List<Question> questions) {
+		@Schema(requiredMode = REQUIRED) List<Question> questions) {
 }
