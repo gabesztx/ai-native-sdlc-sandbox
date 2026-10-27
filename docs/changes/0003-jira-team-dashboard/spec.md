@@ -1,7 +1,7 @@
 # Spec: Jira csapat-dashboard – 1. fázis: sprint-áttekintés
 
 - **ID:** 0003-jira-team-dashboard
-- **Státusz:** Draft
+- **Státusz:** Approved
 - **Intent:** [intent.md](intent.md)
 - **Dátum:** 2026-10-27
 
@@ -41,31 +41,6 @@ kell nyilvánosan elérhetőnek lennie. Ez a spec csak az intent 1. fázisát fe
    semmit.
 8. Egy lekérdezés legfeljebb egyszerre fut; ha az előző még tart, a következő kimarad.
 
-### Dashboard (felület)
-
-1. A belépett felhasználó (admin vagy kolléga) megnyitja a **Dashboard** oldalt.
-2. Felül a **KPI-csempék** az aktív sprintről:
-
-   | Csempe | Jelentés |
-   |---|---|
-   | **Összes** | az aktív sprint összes feladata |
-   | **Kész %** | a „Done” státuszkategóriájú feladatok aránya az összeshez, egészre kerekítve |
-   | **Folyamatban** | az „In Progress” státuszkategóriájú feladatok száma |
-   | **Blokkolt** | a `Blocked` nevű státuszban lévő feladatok száma |
-   | **Gazdátlan** | assignee nélküli feladatok száma |
-
-3. Alatta a **haladási sáv**: a sprint neve, kezdete, vége, az eltelt idő aránya és a
-   hátralévő napok száma.
-4. **Lefúrás:** egy csempére kattintva megjelenik a hozzá tartozó feladatok listája
-   (kulcs, összefoglaló, státusz, assignee neve vagy „nincs”). Egy feladatra kattintva
-   új lapon megnyílik a feladat a Jirában.
-5. Ha a háttérben változás érkezik, a csempék, a sáv és a nyitott lista **újratöltés
-   nélkül** frissül.
-6. **Téma:** világos és sötét téma; színvak-barát színek; egy státusz mindenhol ugyanazt
-   a színt kapja (csempe, lista, címke).
-7. Ha az SSE-kapcsolat megszakad, a felület jelzi („Élő frissítés szünetel”), és
-   automatikusan újrakapcsolódik; újrakapcsolódás után a teljes friss adatot kapja.
-
 ### Hibaesetek
 
 - **Nincs aktív sprint:** a dashboard „Nincs aktív sprint” üzenetet mutat, csempék és sáv
@@ -80,6 +55,33 @@ kell nyilvánosan elérhetőnek lennie. Ez a spec csak az intent 1. fázisát fe
 - **Hibás vagy lejárt token (`401`):** a lekérdezés nem frissít, a napló jelzi az okot
   (token nélkül).
 - **Belépés nélkül** a dashboard és annak API-ja nem érhető el (`401`).
+
+## Felület
+
+- **Elrendezés:** új **Dashboard** oldal, az admin és a kolléga navigációjában is
+  megjelenik (a `0004`-ben lefektetett oldalsáv/mobil alsó sáv mintázata szerint). Felül
+  a KPI-csempék sora, alatta a sprint haladási sávja; egy csempére kattintva alatta
+  megjelenik a hozzá tartozó, szűrt feladatlista.
+- **Komponensek:**
+  - **KPI-csempék** (Összes, Kész %, Folyamatban, Blokkolt, Gazdátlan) — kattinthatók,
+    a kattintott csempe nyitja a lefúrási listát.
+  - **Haladási sáv:** sprint neve, kezdete, vége, eltelt idő aránya, hátralévő napok.
+  - **Feladatlista** (lefúrás): kulcs, összefoglaló, státusz, assignee neve vagy „nincs”;
+    egy sorra kattintva a Jira-feladat új lapon nyílik meg.
+  - **Üres/hiba állapotok:** „Nincs aktív sprint” (csempék és sáv nélkül), „Az adatok nem
+    érhetők el” (sikertelen kezdeti betöltés), „Élő frissítés szünetel” (SSE-kapcsolat
+    megszakadt, automatikus újrakapcsolódással).
+- **Reszponzivitás:** a `0004`-ben lefektetett törésponthoz és navigációs mintához
+  igazodik; kisebb képernyőn a csempék egy oszlopba rendeződnek, a feladatlista
+  görgethető.
+- **Animáció:** csak CSS-alapú, a projekt szabálya szerint; háttérből érkező
+  frissítéskor a változott csempe/sáv értéke finoman kiemelve jelenik meg; az „Élő
+  frissítés szünetel” jelzés be- és kiúszása animált.
+- **Design tokenek:** nem vezet be új design rendszert — a `0004`-ben lefektetett
+  PrimeNG/Aura témát, színeket és a Manrope betűtípust használja. Új elem: a Jira
+  státuszkategóriákhoz (`TODO`/`IN_PROGRESS`/`DONE`) és a `Blocked` státuszhoz rendelt,
+  színvak-barát színkódolás, amely minden nézetben (csempe, lista, címke) és mindkét
+  témában (világos/sötét) azonos.
 
 ## API
 
@@ -141,6 +143,7 @@ kell nyilvánosan elérhetőnek lennie. Ez a spec csak az intent 1. fázisát fe
 | | `status_category` | TEXT | igen | `TODO` / `IN_PROGRESS` / `DONE` |
 | | `assignee_account_id` | TEXT | nem | Jira `accountId`; üres = gazdátlan |
 | | `assignee_name` | TEXT | nem | |
+| | `assignee_avatar_url` | TEXT | nem | a Jira feladat assignee-jének avatar URL-je; üres, ha gazdátlan |
 | | `jira_updated_at` | TEXT | igen | a feladat utolsó módosítása a Jirában; régebbi adat nem írja felül az újabbat |
 | `jira_sync_state` | `id` | INTEGER | igen | egyetlen sor |
 | | `last_synced_at` | TEXT | nem | a legutóbbi sikeres lekérdezés ideje; ettől kezdve kérdezi a változásokat |
