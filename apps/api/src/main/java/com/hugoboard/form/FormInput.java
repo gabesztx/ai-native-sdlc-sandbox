@@ -9,5 +9,5 @@ import java.util.List;
 public record FormInput(
 		@NotBlank @Size(max = 200) String topic,
 		@NotNull Long evaluatedMemberId,
-		@NotNull List<@NotNull @Valid QuestionInput> questions) {
+		@NotNull @Size(max = 50) List<@NotNull @Valid QuestionInput> questions) {
 }

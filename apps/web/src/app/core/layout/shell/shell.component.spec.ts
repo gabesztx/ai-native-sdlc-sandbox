@@ -26,6 +26,26 @@ function menuLabels(root: HTMLElement): string[] {
   return Array.from(root.querySelectorAll('.menu-item')).map((a) => a.textContent?.trim() ?? '');
 }
 
+function activeMenuLabels(root: HTMLElement): string[] {
+  return Array.from(root.querySelectorAll('.menu-item.active')).map((a) => a.textContent?.trim() ?? '');
+}
+
+async function renderAt(url: string): Promise<HTMLElement> {
+  TestBed.configureTestingModule({
+    imports: [ShellComponent],
+    providers: [
+      provideRouter([{ path: '**', children: [] }]),
+      provideHttpClient(withInterceptors([authInterceptor])),
+      provideHttpClientTesting(),
+      provideApiConfiguration(''),
+    ],
+  });
+  const fixture = TestBed.createComponent(ShellComponent);
+  await TestBed.inject(Router).navigateByUrl(url);
+  await fixture.whenStable();
+  return fixture.nativeElement as HTMLElement;
+}
+
 describe('ShellComponent', () => {
   beforeEach(() => sessionStorage.clear());
 
@@ -45,6 +65,36 @@ describe('ShellComponent', () => {
     expect(menuLabels(root)).toEqual(['Értékeléseim']);
     expect(root.querySelector('.user-name')?.textContent).toContain('Teszt Elek');
     expect(root.querySelector('.logout')).not.toBeNull();
+  });
+
+  it('részletes (/admin/forms/7) oldalon az Űrlapok marad kiemelve', async () => {
+    storeSession(adminTokens());
+
+    expect(activeMenuLabels(await renderAt('/admin/forms/7'))).toEqual(['Űrlapok']);
+  });
+
+  it('szerkesztő (/admin/forms/7/edit) oldalon az Űrlapok marad kiemelve', async () => {
+    storeSession(adminTokens());
+
+    expect(activeMenuLabels(await renderAt('/admin/forms/7/edit'))).toEqual(['Űrlapok']);
+  });
+
+  it('az Új űrlap oldalon az Új űrlap van kiemelve, nem az Űrlapok', async () => {
+    storeSession(adminTokens());
+
+    expect(activeMenuLabels(await renderAt('/admin/forms/new'))).toEqual(['Új űrlap']);
+  });
+
+  it('a Csapattagok oldalon a Csapattagok van kiemelve', async () => {
+    storeSession(adminTokens());
+
+    expect(activeMenuLabels(await renderAt('/admin/team'))).toEqual(['Csapattagok']);
+  });
+
+  it('kitöltő oldalon (/reviews/21) az Értékeléseim marad kiemelve', async () => {
+    storeSession(memberTokens());
+
+    expect(activeMenuLabels(await renderAt('/reviews/21'))).toEqual(['Értékeléseim']);
   });
 
   it('AC52: a Kilépés törli a tokeneket és a /login-ra visz', async () => {

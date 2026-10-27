@@ -82,6 +82,23 @@ class FormApiTest extends ApiTestSupport {
 	}
 
 	@Test
+	@DisplayName("AC18: 50-nél több kérdéssel 400, mezőnkénti hibával")
+	void rejectsTooManyQuestions() throws Exception {
+		StringBuilder questions = new StringBuilder("[");
+		for (int i = 0; i < 51; i++) {
+			if (i > 0) {
+				questions.append(',');
+			}
+			questions.append("{\"text\":\"Q").append(i).append("\",\"type\":\"TEXT\",\"required\":false}");
+		}
+		questions.append(']');
+
+		postForm(formJson("T", evaluatedId, questions.toString()))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors", hasKey("questions")));
+	}
+
+	@Test
 	@DisplayName("AC19: DRAFT űrlap témája és kérdései módosíthatók")
 	void updatesDraft() throws Exception {
 		long formId = createForm(admin, evaluatedId, SCALE_AND_TEXT_QUESTIONS);

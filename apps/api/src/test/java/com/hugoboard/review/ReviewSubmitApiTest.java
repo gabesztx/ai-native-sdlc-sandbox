@@ -93,6 +93,25 @@ class ReviewSubmitApiTest extends ReviewTestSupport {
 		assertStillPending();
 	}
 
+	@Test
+	@DisplayName("50-nél több válasszal 400, mezőnkénti hibával")
+	void rejectsTooManyAnswers() throws Exception {
+		StringBuilder answers = new StringBuilder("[");
+		for (int i = 0; i < 51; i++) {
+			if (i > 0) {
+				answers.append(',');
+			}
+			answers.append("{\"questionId\":").append(scaleQuestionId).append(",\"scaleValue\":1}");
+		}
+		answers.append(']');
+
+		submit(anna, reviewId, answers.toString())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors", hasKey("answers")));
+
+		assertStillPending();
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = { "", "   " })
 	@DisplayName("AC35: kötelező szöveges kérdésre üres vagy csak szóköz 400")

@@ -50,6 +50,12 @@ class AdminLoginApiTest extends ApiTestSupport {
 		org.assertj.core.api.Assertions.assertThat(wrongPassword).isEqualTo(unknownEmail);
 	}
 
+	@Test
+	@DisplayName("72 bájtnál hosszabb jelszó 400, nem 500 (BCrypt limit előtt elutasítva)")
+	void tooLongPasswordIsRejectedBeforeHashing() throws Exception {
+		login(ADMIN_EMAIL, "x".repeat(73)).andExpect(status().isBadRequest());
+	}
+
 	private ResultActions login(String email, String password) throws Exception {
 		return mvc.perform(post("/api/auth/admin/login")
 				.contentType(MediaType.APPLICATION_JSON)
