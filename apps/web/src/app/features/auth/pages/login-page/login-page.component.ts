@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { EMPTY, catchError, finalize } from 'rxjs';
 import { Button } from 'primeng/button';
@@ -15,7 +15,7 @@ import { ThemeToggleComponent } from '../../../../shared/components/theme-toggle
 
 @Component({
   selector: 'login-page',
-  imports: [ReactiveFormsModule, Button, Card, InputText, Message, Select, ThemeToggleComponent],
+  imports: [FormField, FormRoot, Button, Card, InputText, Message, Select, ThemeToggleComponent],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss',
 })
@@ -32,24 +32,26 @@ export class LoginPageComponent {
   public adminLoading = signal(false);
   public memberLoading = signal(false);
 
-  public adminForm = new FormGroup({
-    email: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+  private adminModel = signal({ email: '', password: '' });
+  public adminForm = form(this.adminModel, (path) => {
+    required(path.email);
+    required(path.password);
   });
 
-  public memberForm = new FormGroup({
-    memberId: new FormControl<number | null>(null, Validators.required),
+  private memberModel = signal<{ memberId: number | null }>({ memberId: null });
+  public memberForm = form(this.memberModel, (path) => {
+    required(path.memberId);
   });
 
   public onAdminLogin(): void {
     if (this.adminLoading()) {
       return;
     }
-    if (this.adminForm.invalid) {
-      this.adminForm.markAllAsTouched();
+    if (this.adminForm().invalid()) {
+      this.adminForm().markAsTouched();
       return;
     }
-    const { email, password } = this.adminForm.getRawValue();
+    const { email, password } = this.adminModel();
     this.adminError.set('');
     this.adminLoading.set(true);
     this.loginService
@@ -68,9 +70,9 @@ export class LoginPageComponent {
     if (this.memberLoading()) {
       return;
     }
-    const memberId = this.memberForm.controls.memberId.value;
+    const memberId = this.memberModel().memberId;
     if (memberId === null) {
-      this.memberForm.markAllAsTouched();
+      this.memberForm().markAsTouched();
       return;
     }
     this.memberError.set('');

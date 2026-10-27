@@ -9,12 +9,12 @@
 
 <div class="login-options">
   <p-card class="login-card stagger-item">
-    <form class="login-form member-login" [formGroup]="memberForm" (ngSubmit)="onMemberLogin()">
+    <form class="login-form member-login" [formRoot]="memberForm" (submit)="onMemberLogin()">
       <h2><i class="pi pi-user" aria-hidden="true"></i> Kolléga belépés</h2>
       <label for="member-select">Ki vagy?</label>
       <p-select
         inputId="member-select"
-        formControlName="memberId"
+        [formField]="memberForm.memberId"
         placeholder="Válaszd ki magad"
         optionLabel="name"
         optionValue="id"
@@ -35,16 +35,16 @@
   </p-card>
 
   <p-card class="login-card stagger-item">
-    <form class="login-form admin-login" [formGroup]="adminForm" (ngSubmit)="onAdminLogin()">
+    <form class="login-form admin-login" [formRoot]="adminForm" (submit)="onAdminLogin()">
       <h2><i class="pi pi-shield" aria-hidden="true"></i> Admin belépés</h2>
       <label for="admin-email">E-mail cím</label>
-      <input pInputText id="admin-email" type="email" formControlName="email" autocomplete="username" [fluid]="true" />
+      <input pInputText id="admin-email" type="email" [formField]="adminForm.email" autocomplete="username" [fluid]="true" />
       <label for="admin-password">Jelszó</label>
       <input
         pInputText
         id="admin-password"
         type="password"
-        formControlName="password"
+        [formField]="adminForm.password"
         autocomplete="current-password"
         [fluid]="true"
       />
