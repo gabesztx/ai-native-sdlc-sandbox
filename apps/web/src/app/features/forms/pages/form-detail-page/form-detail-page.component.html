@@ -100,29 +100,34 @@
 
       <section class="section stagger-item">
         <h2>Beküldött válaszok</h2>
-        @if (responses().length > 0) {
-          <p-accordion [multiple]="true">
-            @for (response of responses(); track response.member.id) {
-              <p-accordion-panel class="response" [value]="response.member.id">
-                <p-accordion-header>
-                  <span class="response-header">
-                    <span class="response-name">{{ response.member.name }}</span>
-                    <span class="time muted">{{ response.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
-                  </span>
-                </p-accordion-header>
-                <p-accordion-content>
-                  <dl class="answers">
-                    @for (answer of response.answers; track answer.questionId) {
-                      <dt>{{ questionText(answer.questionId) }}</dt>
-                      <dd class="answer">{{ answer.scaleValue ?? answer.textValue }}</dd>
-                    }
-                  </dl>
-                </p-accordion-content>
-              </p-accordion-panel>
-            }
-          </p-accordion>
-        } @else {
-          <empty-state icon="pi pi-hourglass" message="Még senki nem küldte be." />
+        @defer (on immediate) {
+          @let submitted = responses();
+          @if (submitted.length > 0) {
+            <p-accordion [multiple]="true">
+              @for (response of submitted; track response.member.id) {
+                <p-accordion-panel class="response" [value]="response.member.id">
+                  <p-accordion-header>
+                    <span class="response-header">
+                      <span class="response-name">{{ response.member.name }}</span>
+                      <span class="time muted">{{ response.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
+                    </span>
+                  </p-accordion-header>
+                  <p-accordion-content>
+                    <dl class="answers">
+                      @for (answer of response.answers; track answer.questionId) {
+                        <dt>{{ questionText(answer.questionId) }}</dt>
+                        <dd class="answer">{{ answer.scaleValue ?? answer.textValue }}</dd>
+                      }
+                    </dl>
+                  </p-accordion-content>
+                </p-accordion-panel>
+              }
+            </p-accordion>
+          } @else {
+            <empty-state icon="pi pi-hourglass" message="Még senki nem küldte be." />
+          }
+        } @placeholder {
+          <p-skeleton height="3rem" />
         }
       </section>
     }

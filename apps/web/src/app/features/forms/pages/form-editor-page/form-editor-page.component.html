@@ -12,6 +12,7 @@
     <div class="fields">
       <div class="field">
         @let topicInvalid = isInvalid(editor.topic, 'topic');
+        @let topicError = error('topic');
         <label for="topic">Fő téma</label>
         <input
           pInputText
@@ -21,12 +22,13 @@
           [class.p-invalid]="topicInvalid"
           [attr.aria-invalid]="topicInvalid ? 'true' : null"
         />
-        @if (error('topic')) {
-          <p-message severity="error" variant="simple" size="small" class="field-error">{{ error('topic') }}</p-message>
+        @if (topicError) {
+          <p-message severity="error" variant="simple" size="small" class="field-error">{{ topicError }}</p-message>
         }
       </div>
 
       <div class="field">
+        @let evaluatedError = error('evaluatedMemberId');
         <label for="evaluated">Kit értékelnek?</label>
         <p-select
           inputId="evaluated"
@@ -38,9 +40,9 @@
           [fluid]="true"
           [class.p-invalid]="isInvalid(editor.evaluatedMemberId, 'evaluatedMemberId')"
         />
-        @if (error('evaluatedMemberId')) {
+        @if (evaluatedError) {
           <p-message severity="error" variant="simple" size="small" class="field-error">
-            {{ error('evaluatedMemberId') }}
+            {{ evaluatedError }}
           </p-message>
         }
       </div>

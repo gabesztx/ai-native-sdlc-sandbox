@@ -11,10 +11,11 @@
       <p-skeleton class="stat" height="5.75rem" />
     }
   } @else {
-    <stat-tile class="stat stagger-item" label="Összes űrlap" icon="pi pi-folder" [value]="stats().total" />
-    <stat-tile class="stat stagger-item" label="Piszkozat" icon="pi pi-pencil" [value]="stats().drafts" />
-    <stat-tile class="stat stagger-item" label="Kiküldve" icon="pi pi-send" [value]="stats().sent" />
-    <stat-tile class="stat stagger-item" label="Beküldött kitöltések" icon="pi pi-check-circle" [value]="stats().submitted" />
+    @let summary = stats();
+    <stat-tile class="stat stagger-item" label="Összes űrlap" icon="pi pi-folder" [value]="summary.total" />
+    <stat-tile class="stat stagger-item" label="Piszkozat" icon="pi pi-pencil" [value]="summary.drafts" />
+    <stat-tile class="stat stagger-item" label="Kiküldve" icon="pi pi-send" [value]="summary.sent" />
+    <stat-tile class="stat stagger-item" label="Beküldött kitöltések" icon="pi pi-check-circle" [value]="summary.submitted" />
   }
 </div>
 

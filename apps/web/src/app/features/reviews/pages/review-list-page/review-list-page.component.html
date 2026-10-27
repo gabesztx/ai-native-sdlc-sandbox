@@ -5,8 +5,9 @@
     <p-skeleton class="stat" height="5.75rem" />
     <p-skeleton class="stat" height="5.75rem" />
   } @else {
-    <stat-tile class="stat stagger-item" label="Kitöltendő" icon="pi pi-inbox" [value]="stats().pending" />
-    <stat-tile class="stat stagger-item" label="Beküldve" icon="pi pi-check-circle" [value]="stats().submitted" />
+    @let summary = stats();
+    <stat-tile class="stat stagger-item" label="Kitöltendő" icon="pi pi-inbox" [value]="summary.pending" />
+    <stat-tile class="stat stagger-item" label="Beküldve" icon="pi pi-check-circle" [value]="summary.submitted" />
   }
 </div>
 
