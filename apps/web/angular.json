@@ -55,6 +55,8 @@
               }
             ],
             "styles": [
+              "@fontsource-variable/manrope/index.css",
+              "primeicons/primeicons.css",
               "src/styles.scss"
             ]
           },

@@ -1,1 +1,117 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'app/shared/animations/animations' as motion;
+
+@layer reset, primeng, app;
+
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+}
+
+@layer app {
+  :root {
+    font-size: 14px;
+    interpolate-size: allow-keywords;
+  }
+
+  body {
+    min-height: 100vh;
+    font-family: 'Manrope Variable', system-ui, sans-serif;
+    line-height: 1.5;
+    color: var(--p-text-color);
+    background: var(--p-surface-50);
+    transition:
+      background-color motion.$duration-base ease,
+      color motion.$duration-base ease;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app-dark body {
+    background: var(--p-surface-950);
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    font-size: 1.15rem;
+    font-weight: 650;
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  a {
+    color: var(--p-primary-color);
+  }
+
+  .p-tag,
+  .p-badge {
+    transition:
+      background-color motion.$duration-base ease,
+      color motion.$duration-base ease;
+  }
+
+  .p-progressbar-value {
+    transition: width motion.$duration-slow motion.$easing-standard;
+
+    @starting-style {
+      width: 0;
+    }
+  }
+
+  .muted {
+    color: var(--p-text-muted-color);
+  }
+}
+
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: motion.$duration-base;
+}
+
+::view-transition-old(page-content) {
+  animation: fade-out motion.$duration-fast ease both;
+}
+
+::view-transition-new(page-content) {
+  animation: fade-in-up motion.$duration-slow motion.$easing-standard both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
