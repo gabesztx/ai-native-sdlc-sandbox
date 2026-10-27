@@ -4,6 +4,52 @@ const { defineConfig } = require("eslint/config");
 const tseslint = require("typescript-eslint");
 const angular = require("angular-eslint");
 
+const FEATURES = ["auth", "forms", "reviews", "team"];
+
+const BASE_PATHS = [
+  { name: "rxjs/operators", message: "Import from 'rxjs'." },
+  { name: "@angular/animations", message: "Use native CSS animations." },
+  {
+    name: "@angular/forms",
+    importNames: ["ReactiveFormsModule", "FormGroup", "FormControl", "FormArray", "FormBuilder"],
+    message: "Use Signal Forms from '@angular/forms/signals'.",
+  },
+  {
+    name: "@angular/core",
+    importNames: ["HostBinding", "HostListener"],
+    message: "Use the host property of @Component / @Directive.",
+  },
+];
+
+const BASE_PATTERNS = [
+  { group: ["@angular/animations/*"], message: "Use native CSS animations." },
+  { group: ["**/api/fn", "**/api/fn/*"], message: "Use the generated services through a feature or core service." },
+];
+
+const COMPONENT_PATHS = [
+  {
+    name: "@angular/common/http",
+    importNames: ["HttpClient"],
+    message: "Components do not call HttpClient; use a feature service.",
+  },
+];
+
+const COMPONENT_PATTERNS = [
+  { group: ["**/core/api/services", "**/core/api/services/*"], message: "Components use a feature service, not a generated service." },
+];
+
+function restrictedImports({ paths = [], patterns = [] } = {}) {
+  return { paths: [...BASE_PATHS, ...paths], patterns: [...BASE_PATTERNS, ...patterns] };
+}
+
+function otherFeaturesPattern(feature) {
+  const others = FEATURES.filter((name) => name !== feature).join("|");
+  return {
+    regex: `^(\\.\\./)+(${others})/`,
+    message: "A feature does not import from another feature.",
+  };
+}
+
 module.exports = defineConfig([
   {
     ignores: ["src/app/core/api/**"],
@@ -36,18 +82,7 @@ module.exports = defineConfig([
         "error",
         { accessibility: "explicit", overrides: { constructors: "off" } },
       ],
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            { name: "rxjs/operators", message: "Import from 'rxjs'." },
-            { name: "@angular/animations", message: "Use native CSS animations." },
-          ],
-          patterns: [
-            { group: ["@angular/animations/*"], message: "Use native CSS animations." },
-          ],
-        },
-      ],
+      "no-restricted-imports": ["error", restrictedImports()],
       "no-restricted-syntax": [
         "error",
         {
@@ -63,6 +98,10 @@ module.exports = defineConfig([
           message: "Use input() / output() instead of @Input() / @Output().",
         },
         {
+          selector: "Decorator[expression.callee.name=/^(HostBinding|HostListener)$/]",
+          message: "Use the host property of @Component / @Directive.",
+        },
+        {
           selector: "MemberExpression[object.name='ChangeDetectionStrategy'][property.name='Eager']",
           message: "OnPush is required; do not use Eager change detection.",
         },
@@ -73,6 +112,33 @@ module.exports = defineConfig([
       ],
     },
   },
+  {
+    files: ["src/app/**/*.component.ts"],
+    rules: {
+      "no-restricted-imports": ["error", restrictedImports({ paths: COMPONENT_PATHS, patterns: COMPONENT_PATTERNS })],
+    },
+  },
+  ...FEATURES.flatMap((feature) => [
+    {
+      files: [`src/app/features/${feature}/**/*.ts`],
+      ignores: ["**/*.component.ts"],
+      rules: {
+        "no-restricted-imports": ["error", restrictedImports({ patterns: [otherFeaturesPattern(feature)] })],
+      },
+    },
+    {
+      files: [`src/app/features/${feature}/**/*.component.ts`],
+      rules: {
+        "no-restricted-imports": [
+          "error",
+          restrictedImports({
+            paths: COMPONENT_PATHS,
+            patterns: [...COMPONENT_PATTERNS, otherFeaturesPattern(feature)],
+          }),
+        ],
+      },
+    },
+  ]),
   {
     files: ["**/*.html"],
     extends: [
