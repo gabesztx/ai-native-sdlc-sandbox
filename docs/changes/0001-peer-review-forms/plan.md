@@ -1,7 +1,7 @@
 # Plan: Kollégák értékelése űrlapokkal
 
 - **ID:** 0001-peer-review-forms
-- **Státusz:** Draft
+- **Státusz:** Approved
 - **Spec:** [spec.md](spec.md)
 - **Dátum:** 2026-10-27
 
