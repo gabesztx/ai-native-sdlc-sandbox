@@ -1,7 +1,7 @@
 # Spec: Kollégák értékelése űrlapokkal
 
 - **ID:** 0001-peer-review-forms
-- **Státusz:** Draft
+- **Státusz:** Approved
 - **Intent:** [intent.md](intent.md)
 - **Dátum:** 2026-10-27
 
@@ -18,14 +18,60 @@ mindkét oldalon látszik, a válaszokat csak az admin látja.
 ### Szereplők és belépés
 
 - **Csapattag (kolléga):** a fix, kitalált felhasználólista egy tagja. Jelszó nincs.
-- **Admin:** egyetlen, előre beállított fiók (e-mail + jelszó). Nem csapattag: nem
-  szerepel a felhasználólistában, nem értékelhető, nem kap űrlapot.
+- **Admin:** egyetlen, előre beállított fiók (e-mail + jelszó környezeti változóból).
+  Nem csapattag: nem szerepel a felhasználólistában, nem értékelhető, nem kap űrlapot.
 - A kezdőoldal a belépés. Két út van rajta:
   1. **Admin belépés:** e-mail cím + jelszó.
   2. **Kolléga belépés:** a csapattagok listájából választás, jelszó nélkül.
 - Belépés után a rendszer a szerepkörnek megfelelő felületre visz. Kilépéssel a
   kezdőoldalra kerül a felhasználó.
 - Belépés nélkül csak a kezdőoldal és a csapattagok listája (a választóhoz) érhető el.
+
+### Munkamenet: tokenek (süti nélkül)
+
+- Sikeres belépéskor a backend két véletlen tokent ad:
+  - **access token:** 15 percig érvényes, minden védett hívás
+    `Authorization: Bearer <token>` fejlécben küldi;
+  - **refresh token:** 8 óráig érvényes, csak új tokenpár kérésére szolgál.
+- A frontend mindkettőt a **sessionStorage**-ban tárolja. Sütit a rendszer nem használ.
+  Következmény: a böngészőlap bezárásakor a munkamenet megszűnik, és új lapon újra be
+  kell lépni.
+- Ha az access token lejárt (`401`), a frontend a refresh tokennel **automatikusan** új
+  tokenpárt kér, és megismétli az eredeti hívást; a felhasználó ebből nem lát semmit.
+- Frissítéskor a régi refresh token **érvénytelenné válik** (rotáció); egy már
+  felhasznált refresh token újbóli használata `401`.
+- Ha a refresh token is lejárt vagy érvénytelen, a felhasználó a kezdőoldalra kerül, és
+  újra be kell lépnie.
+- **Kilépéskor** a backend mindkét tokent azonnal érvényteleníti, a frontend törli őket
+  a sessionStorage-ból.
+- A tokeneket a backend csak hash-elve tárolja, és soha nem naplózza.
+
+### Navigáció
+
+Belépés után mindkét szerepkör egy közös keretet lát: felül a navigációs sáv a saját
+menüpontjaival, a bejelentkezett felhasználó nevével és a **Kilépés** gombbal.
+
+| Szerepkör | Menüpontok | Kezdőoldal belépés után |
+|---|---|---|
+| **Admin** | Űrlapok · Új űrlap · Csapattagok | Űrlapok |
+| **Kolléga** | Értékeléseim | Értékeléseim |
+
+| Oldal | Út (URL) | Ki látja |
+|---|---|---|
+| Belépés | `/login` | mindenki |
+| Űrlapok listája | `/admin/forms` | admin |
+| Új űrlap (szerkesztő) | `/admin/forms/new` | admin |
+| Űrlap részletei, állapotok, válaszok | `/admin/forms/{id}` | admin |
+| Piszkozat szerkesztése | `/admin/forms/{id}/edit` | admin |
+| Csapattagok | `/admin/team` | admin |
+| Értékeléseim | `/reviews` | kolléga |
+| Kitöltés | `/reviews/{id}` | kolléga |
+
+- Belépés nélkül bármely védett oldal a `/login`-ra visz.
+- Más szerepkör oldalára lépve (pl. kolléga a `/admin/...` címen) a felhasználó a saját
+  kezdőoldalára kerül.
+- A `/` cím belépés előtt a `/login`-ra, utána a saját kezdőoldalra visz.
+- A menüben mindig kiemelve látszik az aktuális oldal.
 
 ### Fő folyamat – admin
 
@@ -42,14 +88,18 @@ mindkét oldalon látszik, a válaszokat csak az admin látja.
      - skálánál a skála **legkisebb és legnagyobb értéke** (egész számok);
      - **kötelező** vagy **opcionális**;
    - a kérdések sorrendje a megadás sorrendje.
-4. Mentéskor az űrlap **`Piszkozat`** állapotú. Piszkozatként szabadon módosítható.
+4. Mentéskor az űrlap **`Piszkozat`** állapotú. Piszkozatként szabadon módosítható, és
+   **törölhető** (megerősítés után: „Biztosan törlöd?”). A törölt piszkozat a
+   kérdéseivel együtt végleg eltűnik.
 5. Az admin **kiküldi** az űrlapot:
    - a címzettek a csapat összes tagja, **az értékelt személy kivételével**;
    - minden címzetthez létrejön egy **kitöltés** `Kitöltendő` állapottal;
    - az űrlap állapota `Kiküldve` lesz, és onnantól **nem módosítható**.
-6. Egy kiküldött űrlap részleteinél látja a címzettek listáját, mindegyiknél az
+6. A **Csapattagok** oldalon látja a csapat tagjainak listáját (név). Ebben a
+   változásban a lista csak olvasható.
+7. Egy kiküldött űrlap részleteinél látja a címzettek listáját, mindegyiknél az
    állapotot (`Kitöltendő` / `Beküldve`) és a beküldés idejét.
-7. A beküldött kitöltéseket **név szerint** látja: ki, mikor, melyik kérdésre mit
+8. A beküldött kitöltéseket **név szerint** látja: ki, mikor, melyik kérdésre mit
    válaszolt.
 
 ### Fő folyamat – kolléga
@@ -80,8 +130,9 @@ mindkét oldalon látszik, a válaszokat csak az admin látja.
 - **Hibás admin e-mail vagy jelszó:** a belépés sikertelen, egy általános hibaüzenet
   jelenik meg („Hibás e-mail cím vagy jelszó”), amely nem árulja el, melyik volt hibás.
 - **Kolléga belépés nem létező felhasználóval:** sikertelen, hibaüzenet.
-- **Belépés nélküli hívás védett funkcióra:** elutasítva (`401`), a felület a
-  kezdőoldalra visz.
+- **Belépés nélküli vagy lejárt / érvénytelen access tokennel érkező hívás:** `401`.
+  A felület egyszer megpróbálja frissíteni a tokent; ha nem sikerül, a kezdőoldalra visz.
+- **Lejárt, érvénytelen vagy már felhasznált refresh token:** `401`.
 - **Kolléga admin-funkciót hív:** elutasítva (`403`).
 - **Kolléga más kitöltését kéri vagy küldi be:** úgy viselkedik, mintha nem létezne
   (`404`), hogy ne derüljön ki, létezik-e.
@@ -91,6 +142,8 @@ mindkét oldalon látszik, a válaszokat csak az admin látja.
 - **Kiküldött űrlap módosítása:** elutasítva (`409`), „A kiküldött űrlap nem
   módosítható”.
 - **Kiküldött űrlap újbóli kiküldése:** elutasítva (`409`).
+- **Kiküldött űrlap törlése:** elutasítva (`409`), „A kiküldött űrlap nem törölhető”; a
+  felületen kiküldött űrlapnál nincs Törlés gomb.
 - **Kiküldés kérdés nélkül:** elutasítva, „Legalább egy kérdés szükséges”.
 - **Kiküldés címzett nélkül** (a csapatban az értékelt személyen kívül nincs más):
   elutasítva, „Nincs címzett”.
@@ -104,8 +157,8 @@ mindkét oldalon látszik, a válaszokat csak az admin látja.
 
 ## API
 
-Minden végpont JSON-t fogad és ad. A hívó azonosítása a belépéskor létrejött
-munkamenet alapján történik (lásd Nyitott kérdések 6.). A hibák egységes formában jönnek
+Minden végpont JSON-t fogad és ad. A hívót az `Authorization: Bearer <access token>`
+fejléc azonosítja; süti nincs. A hibák egységes formában jönnek
 (RFC 9457 Problem Details); validációs hibánál mezőnkénti hibalistával.
 
 ### Belépés
@@ -113,10 +166,11 @@ munkamenet alapján történik (lásd Nyitott kérdések 6.). A hibák egységes
 | Metódus | Út | Kérés | Válasz | Hibák |
 |---|---|---|---|---|
 | `GET` | `/api/auth/team-members` | – | `200` + `TeamMember[]` | – |
-| `POST` | `/api/auth/admin/login` | `{ email, password }` | `200` + `Me` | `400`, `401` |
-| `POST` | `/api/auth/member/login` | `{ memberId }` | `200` + `Me` | `400`, `404` |
-| `POST` | `/api/auth/logout` | – | `204` | – |
-| `GET` | `/api/auth/me` | – | `200` + `Me` | `401` |
+| `POST` | `/api/auth/admin/login` | `{ email, password }` | `200` + `AuthTokens` | `400`, `401` |
+| `POST` | `/api/auth/member/login` | `{ memberId }` | `200` + `AuthTokens` | `400`, `404` |
+| `POST` | `/api/auth/refresh` | `{ refreshToken }` | `200` + `AuthTokens` (új pár) | `400`, `401` |
+| `POST` | `/api/auth/logout` | `{ refreshToken }` + Bearer | `204` | `401` |
+| `GET` | `/api/auth/me` | Bearer | `200` + `Me` | `401` |
 
 ### Admin
 
@@ -129,6 +183,7 @@ Mind admin belépést igényel: belépés nélkül `401`, kollégaként `403`.
 | `POST` | `/api/admin/forms` | `FormInput` | `201` + `FormDetail` | `400`, `401`, `403` |
 | `GET` | `/api/admin/forms/{formId}` | – | `200` + `FormDetail` | `401`, `403`, `404` |
 | `PUT` | `/api/admin/forms/{formId}` | `FormInput` | `200` + `FormDetail` | `400`, `401`, `403`, `404`, `409` |
+| `DELETE` | `/api/admin/forms/{formId}` | – | `204` | `401`, `403`, `404`, `409` |
 | `POST` | `/api/admin/forms/{formId}/send` | – | `200` + `FormDetail` | `401`, `403`, `404`, `409`, `422` |
 | `GET` | `/api/admin/forms/{formId}/responses` | – | `200` + `FormResponse[]` | `401`, `403`, `404` |
 
@@ -150,6 +205,13 @@ Mind kolléga belépést igényel: belépés nélkül `401`, adminként `403`.
 
 // Me
 { "role": "ADMIN" | "MEMBER", "memberId": 3 /* csak MEMBER */, "name": "Teszt Elek" }
+
+// AuthTokens
+{
+  "accessToken": "…", "accessTokenExpiresIn": 900,
+  "refreshToken": "…", "refreshTokenExpiresIn": 28800,
+  "me": { "role": "MEMBER", "memberId": 3, "name": "Teszt Elek" }
+}
 
 // FormInput
 {
@@ -210,6 +272,15 @@ Mind kolléga belépést igényel: belépés nélkül `401`, adminként `403`.
 | `admin_account` | `id` | INTEGER | igen | elsődleges kulcs |
 | | `email` | TEXT | igen | egyedi |
 | | `password_hash` | TEXT | igen | jelszó hash-e, soha nem nyílt szöveg |
+| `auth_session` | `id` | INTEGER | igen | elsődleges kulcs; egy belépés |
+| | `role` | TEXT | igen | `ADMIN` / `MEMBER` |
+| | `member_id` | INTEGER | nem | → `team_member.id`; csak `MEMBER`-nél |
+| | `access_token_hash` | TEXT | igen | egyedi; az access token hash-e |
+| | `access_expires_at` | TEXT | igen | |
+| | `refresh_token_hash` | TEXT | igen | egyedi; frissítéskor cserélődik |
+| | `refresh_expires_at` | TEXT | igen | |
+| | `revoked_at` | TEXT | nem | kilépéskor töltődik |
+| | `created_at` | TEXT | igen | |
 | `review_form` | `id` | INTEGER | igen | elsődleges kulcs |
 | | `topic` | TEXT | igen | fő téma |
 | | `evaluated_member_id` | INTEGER | igen | → `team_member.id` |
@@ -248,110 +319,152 @@ Mind kolléga belépést igényel: belépés nélkül `401`, adminként `403`.
    csapattagokat, **akkor** megkapom a listát (id + név), és az admin nincs benne.
 2. **Adott** az előre beállított admin fiók, **amikor** helyes e-mail címmel és jelszóval
    lépek be, **akkor** a belépés sikeres, és a `me` válaszban `ADMIN` szerepkör áll.
-3. **Adott** az admin fiók, **amikor** hibás jelszóval vagy nem létező e-mail címmel
+3. **Adott** a környezeti változókban megadott admin e-mail és jelszó, **amikor** a
+   backend elindul, **akkor** ezekkel az admin be tud lépni; ha a jelszót a változóban
+   megváltoztatom és újraindítom, a régi jelszóval a belépés `401`.
+4. **Adott** az admin fiók, **amikor** hibás jelszóval vagy nem létező e-mail címmel
    lépek be, **akkor** `401`-et kapok, mindkét esetben ugyanazzal az üzenettel.
-4. **Adott** egy létező csapattag, **amikor** kollégaként belépek vele, **akkor** a
+5. **Adott** egy létező csapattag, **amikor** kollégaként belépek vele, **akkor** a
    belépés sikeres, és a `me` válaszban `MEMBER` szerepkör és az ő azonosítója áll.
-5. **Adott** egy nem létező csapattag-azonosító, **amikor** kollégaként belépek vele,
+6. **Adott** egy nem létező csapattag-azonosító, **amikor** kollégaként belépek vele,
    **akkor** `404`-et kapok.
-6. **Adott** egy belépett felhasználó, **amikor** kilépek, **akkor** a következő védett
-   hívás `401`-et ad.
-7. **Adott** a jelszó tárolása, **amikor** megnézem az `admin_account` táblát, **akkor**
+7. **Adott** egy belépett felhasználó, **amikor** kilépek, **akkor** a régi access
+   tokennel a következő védett hívás `401`-et ad, és a régi refresh tokennel a frissítés
+   is `401`.
+8. **Adott** egy sikeres belépés, **amikor** megnézem a választ, **akkor** van benne
+   access token (900 mp) és refresh token (28 800 mp), és a válasz nem állít be sütit.
+9. **Adott** egy érvényes refresh token, **amikor** frissítek, **akkor** új tokenpárt
+   kapok, az új access tokennel a védett hívás `200`, és a régi refresh tokennel egy
+   újabb frissítés `401`.
+10. **Adott** egy lejárt access token, **amikor** védett végpontot hívok vele, **akkor**
+   `401`-et kapok.
+11. **Adott** egy lejárt refresh token, **amikor** frissítek vele, **akkor** `401`-et
+   kapok.
+12. **Adott** a tokenek tárolása, **amikor** megnézem az `auth_session` táblát, **akkor**
+   a tokenek nem nyílt szövegként szerepelnek.
+13. **Adott** a jelszó tárolása, **amikor** megnézem az `admin_account` táblát, **akkor**
    a jelszó nem nyílt szövegként szerepel.
 
 **Jogosultság**
 
-8. **Adott** belépés nélküli állapot, **amikor** bármely `/api/admin/**` vagy
+14. **Adott** belépés nélküli állapot, **amikor** bármely `/api/admin/**` vagy
    `/api/me/**` végpontot hívom, **akkor** `401`-et kapok.
-9. **Adott** egy kollégaként belépett felhasználó, **amikor** bármely `/api/admin/**`
+15. **Adott** egy kollégaként belépett felhasználó, **amikor** bármely `/api/admin/**`
    végpontot hívom, **akkor** `403`-at kapok.
-10. **Adott** egy adminként belépett felhasználó, **amikor** bármely `/api/me/**`
+16. **Adott** egy adminként belépett felhasználó, **amikor** bármely `/api/me/**`
     végpontot hívom, **akkor** `403`-at kapok.
 
 **Űrlap összeállítása (admin)**
 
-11. **Adott** admin belépés, **amikor** érvényes fő témával, értékelt személlyel, egy
+17. **Adott** admin belépés, **amikor** érvényes fő témával, értékelt személlyel, egy
     skálás (1–5, kötelező) és egy szöveges (opcionális) kérdéssel űrlapot hozok létre,
     **akkor** `201`-et kapok, az űrlap `DRAFT` állapotú, és a kérdések a megadott
     sorrendben, a megadott beállításokkal szerepelnek.
-12. **Adott** admin belépés, **amikor** üres fő témával, nem létező értékelt személlyel,
+18. **Adott** admin belépés, **amikor** üres fő témával, nem létező értékelt személlyel,
     üres kérdésszöveggel, ismeretlen típussal, hiányzó skálahatárral vagy
     `scaleMin ≥ scaleMax` értékkel mentek, **akkor** `400`-at kapok mezőnkénti hibával,
     és nem jön létre űrlap.
-13. **Adott** egy `DRAFT` űrlap, **amikor** módosítom a témáját és a kérdéseit, **akkor**
+19. **Adott** egy `DRAFT` űrlap, **amikor** módosítom a témáját és a kérdéseit, **akkor**
     `200`-at kapok, és a lekért űrlap az új tartalmat mutatja.
-14. **Adott** admin belépés és több űrlap, **amikor** lekérem az űrlapok listáját,
+20. **Adott** admin belépés és több űrlap, **amikor** lekérem az űrlapok listáját,
     **akkor** mindegyiknél látszik a téma, az értékelt személy, az állapot, a címzettek
     és a beküldöttek száma.
 
+21. **Adott** egy `DRAFT` űrlap kérdésekkel, **amikor** törlöm, **akkor** `204`-et
+    kapok, az űrlap nem szerepel a listában, és a lekérése `404`.
+22. **Adott** egy `SENT` űrlap, **amikor** törölni próbálom, **akkor** `409`-et kapok, és
+    az űrlap, a kitöltései és a válaszai változatlanok.
+
 **Kiküldés**
 
-15. **Adott** egy `DRAFT` űrlap legalább egy kérdéssel és egy N tagú csapat, **amikor**
+23. **Adott** egy `DRAFT` űrlap legalább egy kérdéssel és egy N tagú csapat, **amikor**
     kiküldöm, **akkor** az űrlap `SENT` lesz, kitöltve a `sentAt`, és pontosan N−1
     `PENDING` kitöltés jön létre: minden csapattagnak egy, az értékelt személynek nem.
-16. **Adott** egy `SENT` űrlap, **amikor** módosítani próbálom, **akkor** `409`-et kapok,
+24. **Adott** egy `SENT` űrlap, **amikor** módosítani próbálom, **akkor** `409`-et kapok,
     és az űrlap változatlan.
-17. **Adott** egy `SENT` űrlap, **amikor** újra kiküldöm, **akkor** `409`-et kapok, és
+25. **Adott** egy `SENT` űrlap, **amikor** újra kiküldöm, **akkor** `409`-et kapok, és
     nem jön létre újabb kitöltés.
-18. **Adott** egy kérdés nélküli `DRAFT` űrlap, **amikor** kiküldöm, **akkor** `422`-t
+26. **Adott** egy kérdés nélküli `DRAFT` űrlap, **amikor** kiküldöm, **akkor** `422`-t
     kapok, és az űrlap `DRAFT` marad.
-19. **Adott** egy `DRAFT` űrlap egy olyan csapatban, ahol az értékelt személyen kívül
+27. **Adott** egy `DRAFT` űrlap egy olyan csapatban, ahol az értékelt személyen kívül
     nincs más tag, **amikor** kiküldöm, **akkor** `422`-t kapok, és az űrlap `DRAFT`
     marad.
 
 **Kitöltés (kolléga)**
 
-20. **Adott** egy kiküldött űrlap, amelynek címzettje vagyok, **amikor** lekérem az
+28. **Adott** egy kiküldött űrlap, amelynek címzettje vagyok, **amikor** lekérem az
     értékeléseimet, **akkor** szerepel benne `PENDING` állapottal, a témával és az
     értékelt személy nevével.
-21. **Adott** egy űrlap, amelynek én vagyok az értékeltje, **amikor** lekérem az
+29. **Adott** egy űrlap, amelynek én vagyok az értékeltje, **amikor** lekérem az
     értékeléseimet, **akkor** nem szerepel benne.
-22. **Adott** egy `DRAFT` (még ki nem küldött) űrlap, **amikor** bármely kolléga lekéri
+30. **Adott** egy `DRAFT` (még ki nem küldött) űrlap, **amikor** bármely kolléga lekéri
     az értékeléseit, **akkor** nem szerepel benne.
-23. **Adott** egy saját `PENDING` kitöltés, **amikor** megnyitom, **akkor** látom a
+31. **Adott** egy saját `PENDING` kitöltés, **amikor** megnyitom, **akkor** látom a
     kérdéseket sorrendben, a típusukkal, a skálahatárokkal és a kötelezőséggel.
-24. **Adott** egy saját `PENDING` kitöltés, **amikor** minden kötelező kérdésre érvényes
+32. **Adott** egy saját `PENDING` kitöltés, **amikor** minden kötelező kérdésre érvényes
     választ adva beküldöm, **akkor** `200`-at kapok, az állapot `SUBMITTED` lesz, és
     kitöltődik a `submittedAt`.
-25. **Adott** egy saját `PENDING` kitöltés, **amikor** egy kötelező kérdést kihagyva
+33. **Adott** egy saját `PENDING` kitöltés, **amikor** egy kötelező kérdést kihagyva
     küldöm be, **akkor** `400`-at kapok a hiányzó kérdés megjelölésével, és az állapot
     `PENDING` marad.
-26. **Adott** egy 1–5 skálás kérdés, **amikor** 0-t, 6-ot vagy szöveget küldök rá,
+34. **Adott** egy 1–5 skálás kérdés, **amikor** 0-t, 6-ot vagy szöveget küldök rá,
     **akkor** `400`-at kapok, és az állapot `PENDING` marad.
-27. **Adott** egy kötelező szöveges kérdés, **amikor** üres vagy csak szóközökből álló
+35. **Adott** egy kötelező szöveges kérdés, **amikor** üres vagy csak szóközökből álló
     szöveget küldök rá, **akkor** `400`-at kapok.
-28. **Adott** egy saját `PENDING` kitöltés, **amikor** egy másik űrlap kérdésére küldök
+36. **Adott** egy saját `PENDING` kitöltés, **amikor** egy másik űrlap kérdésére küldök
     választ, **akkor** `400`-at kapok.
-29. **Adott** egy opcionális kérdés, **amikor** válasz nélkül küldöm be a kitöltést,
+37. **Adott** egy opcionális kérdés, **amikor** válasz nélkül küldöm be a kitöltést,
     **akkor** a beküldés sikeres.
-30. **Adott** egy saját `SUBMITTED` kitöltés, **amikor** újra beküldöm, **akkor**
+38. **Adott** egy saját `SUBMITTED` kitöltés, **amikor** újra beküldöm, **akkor**
     `409`-et kapok, és a korábbi válaszok változatlanok.
 
 **Láthatóság**
 
-31. **Adott** egy másik kolléga kitöltése, **amikor** kollégaként lekérem vagy
+39. **Adott** egy másik kolléga kitöltése, **amikor** kollégaként lekérem vagy
     beküldöm, **akkor** `404`-et kapok.
-32. **Adott** egy saját `SUBMITTED` kitöltés, **amikor** lekérem az értékeléseimet vagy a
+40. **Adott** egy saját `SUBMITTED` kitöltés, **amikor** lekérem az értékeléseimet vagy a
     kitöltést, **akkor** a válaszban nincsenek benne a válaszok — sem az enyémek, sem
     másokéi.
-33. **Adott** egy kiküldött űrlap, ahol egy címzett beküldött, egy másik nem, **amikor**
+41. **Adott** egy kiküldött űrlap, ahol egy címzett beküldött, egy másik nem, **amikor**
     adminként lekérem a részleteit, **akkor** a beküldő `SUBMITTED` állapottal és
     időponttal, a másik `PENDING` állapottal szerepel, és a lista `submittedCount`
     értéke 1.
-34. **Adott** egy kiküldött űrlap beküldött kitöltésekkel, **amikor** adminként lekérem
+42. **Adott** egy kiküldött űrlap beküldött kitöltésekkel, **amikor** adminként lekérem
     a válaszokat, **akkor** minden beküldött kitöltésnél látom a beküldő nevét, idejét és
     kérdésenkénti válaszait; a `PENDING` kitöltések nem szerepelnek.
 
 **Felület**
 
-35. **Adott** a kezdőoldal, **amikor** megnyitom, **akkor** látom az admin belépést
+43. **Adott** a kezdőoldal, **amikor** megnyitom, **akkor** látom az admin belépést
     (e-mail, jelszó) és a kolléga választót.
-36. **Adott** egy kollégaként belépett felhasználó, **amikor** a felületen kitölt és
+44. **Adott** egy kollégaként belépett felhasználó, **amikor** a felületen kitölt és
     beküld egy űrlapot, **akkor** az Értékeléseim listán `Beküldve` állapot jelenik
     meg, és az űrlap nem nyitható meg újra kitöltésre.
-37. **Adott** egy adminként belépett felhasználó, **amikor** a felületen létrehoz,
+45. **Adott** egy adminként belépett felhasználó, **amikor** a felületen létrehoz,
     kiküld egy űrlapot, és egy kolléga beküldi, **akkor** az űrlap részleteinél a
     kolléga `Beküldve` állapottal és a válaszaival látszik.
+
+**Navigáció (felület)**
+
+46. **Adott** egy adminként belépett felhasználó, **amikor** megjelenik a navigáció,
+    **akkor** az Űrlapok, Új űrlap és Csapattagok menüpontot és a Kilépés gombot látja,
+    az Értékeléseim menüpontot nem.
+47. **Adott** egy kollégaként belépett felhasználó, **amikor** megjelenik a navigáció,
+    **akkor** az Értékeléseim menüpontot és a Kilépés gombot látja, admin menüpontot nem.
+48. **Adott** belépés nélküli állapot, **amikor** a `/admin/forms` vagy a `/reviews`
+    címet nyitom meg, **akkor** a `/login` oldalra kerülök.
+49. **Adott** egy kollégaként belépett felhasználó, **amikor** a `/admin/forms` címet
+    nyitom meg, **akkor** az Értékeléseim oldalra kerülök; adminként a `/reviews` cím az
+    Űrlapok oldalra visz.
+50. **Adott** egy sikeres belépés, **amikor** a rendszer továbbvisz, **akkor** admin az
+    Űrlapok, kolléga az Értékeléseim oldalra kerül.
+51. **Adott** egy belépett felhasználó lejárt access tokennel és érvényes refresh
+    tokennel, **amikor** a felületen műveletet végez, **akkor** a művelet újra-belépés
+    nélkül sikerül.
+52. **Adott** egy belépett felhasználó, **amikor** a Kilépésre kattint, **akkor** a
+    sessionStorage-ban nem marad token, és a `/login` oldalra kerül.
+53. **Adott** egy adminként belépett felhasználó, **amikor** a Csapattagok oldalt
+    megnyitja, **akkor** látja a csapattagok nevét.
 
 ## Nincs benne (out of scope)
 
@@ -360,6 +473,10 @@ Mind kolléga belépést igényel: belépés nélkül `401`, adminként `403`.
   bármelyik kollégaként; ezt az intent elfogadja.
 - Admin regisztráció, több admin, jelszócsere, elfelejtett jelszó.
 - Belépési próbálkozások korlátozása (rate limiting), fiókzárolás.
+- Csapattagok szerkesztése az admin felületen (a lista itt csak olvasható).
+- **Kockázat, amit ez a spec elfogad:** a sessionStorage-ban lévő tokent egy esetleges
+  XSS-hiba ki tudná olvasni. Ellene: az Angular beépített kimenet-escape-elése, `innerHTML`
+  nélkül; tartalombiztonsági szabályzat (CSP) később.
 - Határidő, emlékeztető, értesítés (e-mail stb.).
 - Beküldött kitöltés módosítása, visszavonása; részleges mentés (piszkozat válasz).
 - Űrlap másolása, sablonok, újrakiküldés.
@@ -368,20 +485,12 @@ Mind kolléga belépést igényel: belépés nélkül `401`, adminként `403`.
 
 ## Nyitott kérdések
 
-Ezeket az intent nem dönti el. A spec a zárójelben lévő **feltételezéssel** készült; ha
-más a válasz, a spec érintett részét módosítani kell.
+Nincs. Eldöntve (2026-10-27):
 
-1. **Piszkozat törlése:** törölhető-e egy `DRAFT` űrlap? (Feltételezés: nem, ebben a
-   változásban nincs törlés.)
-2. **Skála határai:** van-e megkötés az admin által megadott skálára (pl. legkisebb ≥ 0,
-   legnagyobb ≤ 10)? (Feltételezés: tetszőleges egész, `min < max`.)
-3. **Szöveghosszak:** van-e felső korlát a fő témára, a kérdésszövegre és a szöveges
-   válaszra? (Feltételezés: nincs megadva; a plan javasoljon értéket.)
-4. **Saját válaszok:** visszanézheti-e a kolléga a saját beküldött válaszait?
-   (Feltételezés: nem, csak az állapotot és az időt látja.)
-5. **Csapatváltozás kiküldés után:** a címzettek köre a kiküldés pillanatában rögzül.
-   (Feltételezés: igen; a 0001-ben a lista amúgy is fix.)
-6. **Munkamenet:** hogyan azonosítja a backend a belépett felhasználót? (Feltételezés:
-   szerveroldali munkamenet HttpOnly sütivel; kolléga és admin ugyanígy.)
-7. **Az admin fiók beállítása:** honnan jön az admin e-mail címe és jelszava úgy, hogy ne
-   kerüljön a repóba? (A plan dönti el, pl. környezeti változó.)
+1. A piszkozat törölhető, a kiküldött űrlap nem.
+2. A skála határai tetszőleges egészek, `min < max`.
+3. A szöveghosszak felső korlátját a plan javasolja.
+4. A kolléga a saját beküldött válaszait nem kapja vissza, csak az állapotot és az időt.
+5. A címzettek köre a kiküldés pillanatában rögzül.
+6. Access token 15 perc, refresh token 8 óra.
+7. Az admin e-mail címe és jelszava környezeti változóból jön.

@@ -89,7 +89,12 @@ kell nyilvánosan elérhetőnek lennie. Ez a spec csak az intent 1. fázisát fe
 | `GET` | `/api/dashboard/issues?tile={tile}` | `tile` ∈ `ALL`, `DONE`, `IN_PROGRESS`, `BLOCKED`, `UNASSIGNED` | `200` + `Issue[]` | `400`, `401` |
 | `GET` | `/api/dashboard/stream` | – | `200`, `text/event-stream`: `dashboard` esemény `Dashboard` tartalommal; kapcsolódáskor azonnal, utána minden változáskor | `401` |
 
-- Minden végpont admin és kolléga belépéssel is elérhető (`0001` munkamenet).
+- Minden végpont admin és kolléga belépéssel is elérhető; a hívót az `0001` szerinti
+  `Authorization: Bearer <access token>` fejléc azonosítja.
+- A böngésző beépített `EventSource`-a nem tud fejlécet küldeni, ezért a frontend a
+  streamet `fetch`-csel olvassa (Bearer fejléccel); a token nem kerül az URL-be.
+- Ha a stream közben lejár az access token, a frontend frissíti a tokent, és
+  újrakapcsolódik.
 - A `DONE` lista a kész %-hoz tartozó feladatokat adja.
 
 ```jsonc
