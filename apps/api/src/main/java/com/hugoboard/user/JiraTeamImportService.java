@@ -46,7 +46,11 @@ public class JiraTeamImportService {
 			return;
 		}
 		if (!properties.isConfigured()) {
-			log.info("Jira import skipped: HUGO_JIRA_* environment variables are not fully configured");
+			if (properties.isPartiallyConfigured()) {
+				log.warn("Jira import skipped: HUGO_JIRA_* configuration is incomplete");
+			} else {
+				log.info("Jira import skipped: HUGO_JIRA_* environment variables are not configured");
+			}
 			return;
 		}
 		List<ImportedTeamMember> members;

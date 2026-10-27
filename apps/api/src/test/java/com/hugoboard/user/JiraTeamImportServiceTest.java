@@ -6,12 +6,18 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -273,17 +279,34 @@ class JiraTeamImportServiceTest {
 		@Autowired
 		private JdbcClient jdbc;
 
+		private ListAppender<ILoggingEvent> logAppender;
+
 		@BeforeEach
 		void clear() {
 			jdbc.sql("DELETE FROM team_member").update();
+			logAppender = new ListAppender<>();
+			logAppender.start();
+			((Logger) LoggerFactory.getLogger(JiraTeamImportService.class)).addAppender(logAppender);
+		}
+
+		@AfterEach
+		void detachAppender() {
+			((Logger) LoggerFactory.getLogger(JiraTeamImportService.class)).detachAppender(logAppender);
 		}
 
 		@Test
-		@DisplayName("AC14: hiányzó token esetén nincs Jira-hívás, a tábla üres marad")
+		@DisplayName("AC14: hiányzó token esetén nincs Jira-hívás, a tábla üres marad, és a napló figyelmeztet "
+				+ "a megadott értékek kiírása nélkül")
 		void skipsImportWhenOnlyPartiallyConfigured() {
 			assertThatCode(() -> importService.importIfNeeded()).doesNotThrowAnyException();
 
 			assertThat(jdbc.sql("SELECT COUNT(*) FROM team_member").query(Long.class).single()).isZero();
+			assertThat(logAppender.list)
+					.anySatisfy(event -> assertThat(event.getLevel()).isEqualTo(Level.WARN));
+			assertThat(logAppender.list)
+					.extracting(ILoggingEvent::getFormattedMessage)
+					.noneMatch(message -> message.contains("http://127.0.0.1:1") || message.contains("535")
+							|| message.contains("dev@hugo.local"));
 		}
 
 	}

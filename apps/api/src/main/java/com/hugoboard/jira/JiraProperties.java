@@ -29,6 +29,13 @@ public class JiraProperties {
 		return isSet(baseUrl) && isSet(email) && isSet(apiToken) && isSet(boardId);
 	}
 
+	/** True when some but not all of the four HUGO_JIRA_* variables are set. */
+	public boolean isPartiallyConfigured() {
+		int setCount = (isSet(baseUrl) ? 1 : 0) + (isSet(email) ? 1 : 0)
+				+ (isSet(apiToken) ? 1 : 0) + (isSet(boardId) ? 1 : 0);
+		return setCount > 0 && setCount < 4;
+	}
+
 	public String baseUrl() {
 		return baseUrl;
 	}
