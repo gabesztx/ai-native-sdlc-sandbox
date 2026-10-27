@@ -11,7 +11,19 @@ const BASE_PATHS = [
   { name: "@angular/animations", message: "Use native CSS animations." },
   {
     name: "@angular/forms",
-    importNames: ["ReactiveFormsModule", "FormGroup", "FormControl", "FormArray", "FormBuilder"],
+    importNames: [
+      "ReactiveFormsModule",
+      "FormGroup",
+      "FormControl",
+      "FormArray",
+      "FormRecord",
+      "FormBuilder",
+      "NonNullableFormBuilder",
+      "UntypedFormGroup",
+      "UntypedFormControl",
+      "UntypedFormArray",
+      "UntypedFormBuilder",
+    ],
     message: "Use Signal Forms from '@angular/forms/signals'.",
   },
   {
@@ -23,7 +35,17 @@ const BASE_PATHS = [
 
 const BASE_PATTERNS = [
   { group: ["@angular/animations/*"], message: "Use native CSS animations." },
-  { group: ["**/api/fn", "**/api/fn/*"], message: "Use the generated services through a feature or core service." },
+  {
+    group: [
+      "**/api/fn",
+      "**/api/fn/*",
+      "**/api/functions",
+      "**/api/api",
+      "**/api/request-builder",
+      "**/api/strict-http-response",
+    ],
+    message: "Use the generated services through a feature or core service.",
+  },
 ];
 
 const COMPONENT_PATHS = [
@@ -35,7 +57,7 @@ const COMPONENT_PATHS = [
 ];
 
 const COMPONENT_PATTERNS = [
-  { group: ["**/core/api/services", "**/core/api/services/*"], message: "Components use a feature service, not a generated service." },
+  { group: ["**/api/services", "**/api/services/*"], message: "Components use a feature service, not a generated service." },
 ];
 
 function restrictedImports({ paths = [], patterns = [] } = {}) {
@@ -45,7 +67,7 @@ function restrictedImports({ paths = [], patterns = [] } = {}) {
 function otherFeaturesPattern(feature) {
   const others = FEATURES.filter((name) => name !== feature).join("|");
   return {
-    regex: `^(\\.\\./)+(features/)?(${others})/`,
+    regex: `^(\\./)?(\\.\\./)+(features/)?(${others})/`,
     message: "A feature does not import from another feature.",
   };
 }

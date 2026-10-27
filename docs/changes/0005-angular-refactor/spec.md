@@ -10,7 +10,8 @@
 Az `apps/web` kódja feature-first szerkezetbe kerül: minden feature-nek saját oldal-,
 komponens- és szolgáltatás-mappája, valamint saját route-fájlja lesz. A generált kliens
 kész Angular service-osztályokat ad, és ezeket csak a szolgáltatások használják. Az adat
-`rxResource`-on keresztül jut a komponensekbe, az űrlapok Signal Formsra épülnek, a
+a listaoldalakon `rxResource`-on, az id-alapú oldalakon `toSignal`-on keresztül jut a
+komponensekbe (lásd az Eldöntött kérdések 3. pontját), az űrlapok Signal Formsra épülnek, a
 templatek pedig `@let`-et és `@defer`-t használnak. A végfelhasználó semmilyen változást
 nem lát: ugyanazok az útvonalak, a feliratok és az API-kérések.
 
@@ -80,12 +81,14 @@ src/app/
 
 **Adatlekérés:**
 
-- **Az oldal adatát `rxResource` adja.** Az oldal a resource-ból kapja az értéket, a
-  betöltési állapotot és a hibát. A kézi `toObservable → switchMap → subscribe → signal.set`
-  lánc megszűnik.
-- **Kivétel a belépés oldal csapattag-listája:** az `toSignal` marad (lásd Eldöntött kérdés 1).
-  Ugyanígy marad a `toSignal` azoknál a router-eseményekre épülő signaloknál, amelyek nem
-  HTTP-lekérések (`shell`, `breakpoint`).
+- **A listaoldalak és a szerkesztő csapattag-listája `rxResource`-ot használ.** Az oldal a
+  resource-ból kapja az értéket és a betöltési állapotot.
+- **Az id-alapú oldalak** (űrlap részletei, szerkesztő, kitöltés) `toSignal(toObservable(id)
+  .pipe(switchMap(...)))`-t használnak, a módosítás utáni értékhez `linkedSignal`-lal.
+  A kézi `subscribe → signal.set` lánc megszűnik (lásd Eldöntött kérdés 3).
+- **Kivétel:** a belépés oldal csapattag-listája, a menüjelvények, valamint a
+  router-eseményekre épülő signalok (`shell`, `breakpoint`) `toSignal`-on maradnak (lásd
+  Eldöntött kérdés 1 és 3).
 - **Mutáció** (mentés, kiküldés, törlés, beküldés, belépés): a szolgáltatás Observable-t
   ad vissza, és a komponens egyszer iratkozik fel rá. Hibakezelés `catchError`-ral a
   pipe-ban.
@@ -194,11 +197,12 @@ ellenőrzés (*[kézi]*).
     állításokkal zöldek. Ez igazolja, hogy a Signal Forms ugyanazt a kérést küldi, és
     ugyanazokat a hibákat mutatja.
 11. **Adott** az űrlap részletei, a szerkesztő (szerkesztés módban) és a kitöltés oldal,
-    **amikor** betöltenek, **akkor** az adatuk `rxResource`-ból jön. A komponensben nincs
-    `toObservable`, és nincs adatbetöltő `subscribe`. *[keresés]*
+    **amikor** betöltenek, **akkor** az adatuk `toSignal(toObservable(id).pipe(switchMap(...)))`
+    láncból jön (lásd Eldöntött kérdés 3). A komponensben nincs adatbetöltő `subscribe`.
+    *[keresés]*
 12. **Adott** a listaoldalak (űrlapok, értékeléseim, csapattagok) és a menüjelvények,
-    **amikor** betöltenek, **akkor** az adatuk `rxResource`-ból jön (lásd Eldöntött kérdés
-    1). *[keresés]*
+    **amikor** betöltenek, **akkor** a listaoldalak adata `rxResource`-ból jön; a
+    menüjelvények `toSignal`-on maradnak (lásd Eldöntött kérdés 1 és 3). *[keresés]*
 13. **Adott** egy `id` route-paramétert váró oldal, **amikor** a komponenst nézzük,
     **akkor** az `id` input `numberAttribute` transzformot használ, és a komponensben
     nincs `Number(...)` hívás az id-re. *[keresés]*
@@ -242,6 +246,11 @@ ellenőrzés (*[kézi]*).
      beállítást használ.
 2. **A `shared/ui/` átnevezése `shared/components/`-re: igen.** Így a mappa követi az
    `apps/web/CLAUDE.md`-t és az 1/A döntést.
+
+3. **Build közbeni módosítás: az `rxResource` nem megy az id-alapú oldalakra és a
+   menüjelvényekre.** Az `rxResource` betöltés közben pending taskot tart, ezért a
+   `whenStable()`-t a flush előtt hívó tesztek elakadnának, és a tesztek nem módosíthatók.
+   A részletek a [plan.md](plan.md) „Eltérések a build során” szakaszában vannak.
 
 ## Nyitott kérdések
 

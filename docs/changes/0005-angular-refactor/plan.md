@@ -141,3 +141,12 @@ tesztre, a lintre, kódkeresésre és kézi ellenőrzésre épül.
    - Ellenőrizni kell kézzel (AC19): a piros keret és a karakterlimit a mostani legyen.
 3. **Az 1. lépésben a régi `src/app/api/` mappát a felhasználó törölte kézzel**, mert a
    `rm -rf` a `.claude/settings.json`-ban tiltva van.
+4. **A review után a belépés és a kitöltés mezői `[class.p-invalid]="false"` kötést kaptak.**
+   - **Az ok:** a `[formField]` az érvénytelen állapotot a `touched`-tól függetlenül a
+     PrimeNG mező `invalid` inputjára írja, ezért a kötelező mezők első betöltéskor
+     pirosak lettek. Ezeken a mezőkön eddig sosem volt piros keret.
+   - **Az ellenőrzés:** egy ideiglenes (nem commitolt) teszt a kötés nélkül elbukott
+     (2, illetve 3 `.p-invalid` elem), a kötéssel átment.
+5. **A lintszabályok a review után bővültek:** a `core/` alatti komponenseket és a generált
+   `functions`, `api`, `request-builder`, `strict-http-response` fájlokat is tiltja, és a
+   `FormRecord`, `Untyped*` és `NonNullableFormBuilder` importot is.

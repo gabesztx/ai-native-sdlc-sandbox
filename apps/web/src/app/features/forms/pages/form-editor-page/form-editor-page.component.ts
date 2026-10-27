@@ -128,6 +128,7 @@ export class FormEditorPageComponent {
     const request = id === undefined ? this.formsService.create(body) : this.formsService.update(id, body);
     this.serverErrors.set({});
     this.actionError.set('');
+    this.loadError.set('');
     this.saving.set(true);
     request
       .pipe(

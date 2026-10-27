@@ -20,6 +20,7 @@
         optionValue="id"
         [options]="members()"
         [fluid]="true"
+        [class.p-invalid]="false"
       />
       @if (memberError(); as message) {
         <p-message severity="error" class="error">{{ message }}</p-message>
@@ -38,7 +39,7 @@
     <form class="login-form admin-login" [formRoot]="adminForm" (submit)="onAdminLogin()">
       <h2><i class="pi pi-shield" aria-hidden="true"></i> Admin belépés</h2>
       <label for="admin-email">E-mail cím</label>
-      <input pInputText id="admin-email" type="email" [formField]="adminForm.email" autocomplete="username" [fluid]="true" />
+      <input pInputText id="admin-email" type="email" [formField]="adminForm.email" autocomplete="username" [fluid]="true" [class.p-invalid]="false" />
       <label for="admin-password">Jelszó</label>
       <input
         pInputText
@@ -47,6 +48,7 @@
         [formField]="adminForm.password"
         autocomplete="current-password"
         [fluid]="true"
+        [class.p-invalid]="false"
       />
       @if (adminError(); as message) {
         <p-message severity="error" class="error">{{ message }}</p-message>

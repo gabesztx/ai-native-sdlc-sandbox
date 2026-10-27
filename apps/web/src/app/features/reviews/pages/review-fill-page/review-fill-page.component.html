@@ -24,7 +24,7 @@
               @if (question.type === 'SCALE') {
                 @if (useSelectButton(question)) {
                   <div class="scale">
-                    <p-selectbutton [options]="scaleOptions(question)" optionLabel="label" optionValue="value" [formField]="answer.scale" />
+                    <p-selectbutton [options]="scaleOptions(question)" optionLabel="label" optionValue="value" [formField]="answer.scale" [class.p-invalid]="false" />
                   </div>
                 } @else {
                   <div class="scale-input">
@@ -33,6 +33,8 @@
                       [min]="question.scaleMin ?? undefined"
                       [max]="question.scaleMax ?? undefined"
                       [useGrouping]="false"
+                      [class.p-invalid]="false"
+                      [inputStyleClass]="undefined"
                     />
                     <span class="hint muted">({{ question.scaleMin }}–{{ question.scaleMax }})</span>
                   </div>
@@ -44,6 +46,7 @@
                   [formField]="answer.text"
                   rows="3"
                   [fluid]="true"
+                  [class.p-invalid]="false"
                 ></textarea>
               }
               @if (questionError) {
