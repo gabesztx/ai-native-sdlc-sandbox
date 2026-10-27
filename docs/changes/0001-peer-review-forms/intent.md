@@ -1,7 +1,7 @@
 # Intent: Kollégák értékelése űrlapokkal
 
 - **ID:** 0001-peer-review-forms
-- **Státusz:** Draft
+- **Státusz:** Approved
 - **Dátum:** 2026-10-27
 
 ## Probléma

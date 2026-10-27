@@ -1,7 +1,7 @@
 # Intent: Jira csapat-dashboard
 
 - **ID:** 0003-jira-team-dashboard
-- **Státusz:** Draft
+- **Státusz:** Approved
 - **Dátum:** 2026-10-27
 
 ## Probléma
@@ -24,8 +24,10 @@ Tempóból jönnek.
 A dashboard három fázisban készül el:
 
 ### 1. fázis – Sprint-áttekintés
-- **KPI-csempék:** összes feladat, kész %, folyamatban, blokkolt, gazdátlan — mindegyik
-  mellett mini trendgörbe.
+- **KPI-csempék:** összes feladat, kész %, folyamatban, blokkolt (`Blocked` státusz),
+  gazdátlan (nincs assignee, még senkire nincs kiosztva).
+- **Élő frissítés:** a Jira változásai rövid időn belül, oldalújratöltés nélkül
+  megjelennek a dashboardon.
 - **Haladási sáv** a sprint hátralévő idejéről.
 - **Lefúrás:** csempe → szűrt feladatlista → maga a Jira-feladat.
 - **Időszakváltó:** aktuális sprint, előző sprint, utolsó 30 nap.
@@ -61,21 +63,24 @@ korábban látszanak, és a terhelés kiegyensúlyozottabb.
 - Csapatszintű átláthatóság, nem egyéni teljesítménymérés: nincs rangsor, az egyéni nézet
   a terhelést és a segítségigényt mutatja.
 - Tokenek és valódi adatok nem kerülhetnek a publikus repóba.
+- A Jira-hozzáféshez elég egy HUGO-s Jira-felhasználó joga: nem kell Jira-admin, és a
+  backendnek nem kell nyilvánosan elérhetőnek lennie.
+- A céges adat csak a futó szerver adatbázisába kerül.
+- Egyszerű megoldás kell: nincs külön üzemeltetendő rendszerelem.
 
 ## Nincs benne (out of scope)
 
 - **Az első spec csak az 1. fázist fedi.** A 2. és a 3. fázis a dashboard későbbi
   iterációja.
+- Trendgörbék a KPI-csempék mellett.
+- Jira webhook: először polling; a webhook később saját intentként jön, ha a
+  regisztrációja megoldható (Jira-admin vagy saját OAuth-alkalmazás).
+- Automation szabály, felhős közvetítő.
 - AI-funkciók: automatikus vezetői összefoglaló és kérdezhető felület (most nem kell).
 - Bármilyen írás a Jirába vagy a Tempóba.
 
 ## Nyitott kérdések
 
-- **Mit jelent a „blokkolt” és a „gazdátlan”?** Melyik Jira-státusz, flag vagy mező
-  alapján?
-- **Milyen gyakran frissüljenek az adatok?** Oldalbetöltéskor, időzítve, kézzel?
-- **A trendgörbéhez kell előzmény:** a rendszer tárolja a napi állapotokat, vagy a Jirából
-  számolható?
 - **Mikor számít valaki túlterheltnek vagy elakadtnak?** (2. fázis)
 - **Mit mutat a hőtérkép „aktivitása”?** Tempo-órák, Jira-változások, vagy mindkettő?
   (2. fázis)
