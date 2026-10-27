@@ -268,10 +268,11 @@ A téma választása a böngésző helyi tárában (`localStorage`) marad meg. A
 
 ## Elfogadási kritériumok
 
-A *[kézi]* jelölésű kritériumok vizuálisak (pl. képernyőszélesség, kontraszt). Ezeket a
-jsdom-alapú tesztek nem tudják ellenőrizni, ezért a build végén böngészőben, asztali és
-mobil szélességen, mindkét módban kell átnézni őket. Minden más kritériumhoz automatikus
-teszt tartozik.
+A felhasználó döntése szerint (2026-10-27) ehhez a UI/design változáshoz **új teszt nem
+készül**. Minden kritériumot kézi ellenőrzéssel nézünk végig: a build végén böngészőben,
+asztali és mobil szélességen, mindkét módban. A *[kézi]* jelölés azokat a kritériumokat
+jelöli, amelyek eleve csak vizuálisan ellenőrizhetők (pl. képernyőszélesség, kontraszt).
+A meglévő 0001-tesztek megmaradnak, és zöldnek kell maradniuk (AC1).
 
 **Működés változatlan**
 

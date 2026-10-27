@@ -1,7 +1,7 @@
 # Plan: Modern, reszponzív UI design
 
 - **ID:** 0004-ui-design
-- **Státusz:** Draft
+- **Státusz:** Approved
 - **Spec:** [spec.md](spec.md)
 - **Dátum:** 2026-10-27
 
@@ -239,9 +239,8 @@ teszteket”). Az ellenőrzés módja kritériumonként:
   lefuttatja.
 - A kézi ellenőrzést a 11. lépés listája szerint végezzük. Az eredményt (képernyőképek,
   talált hibák) a build végén jelentem.
-- A **spec** elfogadási kritériumai közti mondat („Minden más kritériumhoz automatikus
-  teszt tartozik”) ellentmond az új döntésnek. Ezt a spec-ben át kell írni. Ez a plan
-  nem módosítja a spec-et; a felhasználó dönt róla.
+- A spec elfogadási kritériumainál a bevezető mondatot a felhasználó döntése szerint
+  átírtuk: minden kritérium kézi ellenőrzéssel teljesül, új teszt nem készül.
 
 ## Kockázatok
 
