@@ -1,15 +1,8 @@
-import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import {
-  AbstractControl,
-  FormArray,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { Component, DestroyRef, computed, inject, input, linkedSignal, numberAttribute, signal } from '@angular/core';
+import { rxResource, takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { FieldTree, FormField, FormRoot, applyEach, form, maxLength, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
-import { EMPTY, catchError, filter, finalize, switchMap } from 'rxjs';
+import { EMPTY, catchError, filter, finalize, of, switchMap, tap } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -27,18 +20,26 @@ import { FormsService } from '../../services/forms.service';
 
 type QuestionType = Question['type'];
 
-type QuestionGroup = FormGroup<{
-  text: FormControl<string>;
-  type: FormControl<QuestionType>;
-  required: FormControl<boolean>;
-  scaleMin: FormControl<number | null>;
-  scaleMax: FormControl<number | null>;
-}>;
+interface QuestionDraft {
+  key: number;
+  text: string;
+  type: QuestionType;
+  required: boolean;
+  scaleMin: number | null;
+  scaleMax: number | null;
+}
+
+interface EditorModel {
+  topic: string;
+  evaluatedMemberId: number | null;
+  questions: QuestionDraft[];
+}
 
 @Component({
   selector: 'form-editor-page',
   imports: [
-    ReactiveFormsModule,
+    FormField,
+    FormRoot,
     ButtonDirective,
     ButtonIcon,
     ButtonLabel,
@@ -60,67 +61,73 @@ export class FormEditorPageComponent {
   private destroyRef = inject(DestroyRef);
   private messages = inject(MessageService);
   private confirmDelete = inject(ConfirmDeleteService);
+  private nextKey = 0;
 
-  public id = input<string>();
+  public id = input<number | undefined, unknown>(undefined, { transform: optionalNumber });
   public isEdit = computed(() => this.id() !== undefined);
-  public members = toSignal(this.formsService.teamMembers().pipe(catchError(() => EMPTY)), { initialValue: [] });
+  private membersResource = rxResource({
+    stream: () => this.formsService.teamMembers().pipe(catchError(() => of([]))),
+  });
+  public members = computed(() => this.membersResource.value() ?? []);
   public serverErrors = signal<Record<string, string>>({});
-  public generalError = signal('');
+  private loadError = signal('');
+  private actionError = signal('');
+  public generalError = computed(() => this.actionError() || this.loadError());
   public saving = signal(false);
   public deleting = signal(false);
 
-  public form = new FormGroup({
-    topic: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(200)],
-    }),
-    evaluatedMemberId: new FormControl<number | null>(null, Validators.required),
-    questions: new FormArray<QuestionGroup>([]),
+  private draft = toSignal(
+    toObservable(this.id).pipe(
+      filter((id): id is number => id !== undefined),
+      switchMap((id) =>
+        this.formsService.get(id).pipe(
+          tap((detail) => this.leaveIfNotDraft(detail)),
+          catchError(() => this.notFound()),
+        ),
+      ),
+    ),
+  );
+  private model = linkedSignal<EditorModel>(() => this.toModel(this.draft()));
+  public questions = computed(() => this.model().questions);
+  public editor = form(this.model, (path) => {
+    required(path.topic);
+    maxLength(path.topic, 200);
+    required(path.evaluatedMemberId);
+    applyEach(path.questions, (question) => {
+      required(question.text);
+      maxLength(question.text, 500);
+    });
   });
 
-  public constructor() {
-    toObservable(this.id)
-      .pipe(
-        filter((id): id is string => id !== undefined),
-        switchMap((id) => this.formsService.get(Number(id)).pipe(catchError(() => this.notFound()))),
-        takeUntilDestroyed(),
-      )
-      .subscribe((detail) => this.load(detail));
-  }
-
-  public get questions(): FormArray<QuestionGroup> {
-    return this.form.controls.questions;
-  }
-
   public onAddQuestion(type: QuestionType): void {
-    this.questions.push(newQuestion(type));
+    this.model.update((model) => ({ ...model, questions: [...model.questions, this.newQuestion(type)] }));
   }
 
   public onRemoveQuestion(index: number): void {
-    this.questions.removeAt(index);
+    this.model.update((model) => ({ ...model, questions: model.questions.filter((_, i) => i !== index) }));
   }
 
   public error(key: string): string {
     return this.serverErrors()[key] ?? '';
   }
 
-  public isInvalid(control: AbstractControl, errorKey: string): boolean {
-    return (control.invalid && control.touched) || this.error(errorKey) !== '';
+  public isInvalid<T>(field: FieldTree<T>, errorKey: string): boolean {
+    return (field().invalid() && field().touched()) || this.error(errorKey) !== '';
   }
 
   public onSave(): void {
     if (this.saving()) {
       return;
     }
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+    if (this.editor().invalid()) {
+      this.editor().markAsTouched();
       return;
     }
     const body = this.toInput();
     const id = this.id();
-    const request = id === undefined ? this.formsService.create(body) : this.formsService.update(Number(id), body);
+    const request = id === undefined ? this.formsService.create(body) : this.formsService.update(id, body);
     this.serverErrors.set({});
-    this.generalError.set('');
+    this.actionError.set('');
     this.saving.set(true);
     request
       .pipe(
@@ -139,7 +146,7 @@ export class FormEditorPageComponent {
     if (id === undefined || this.deleting()) {
       return;
     }
-    this.confirmDelete.confirm(() => this.delete(Number(id)));
+    this.confirmDelete.confirm(() => this.delete(id));
   }
 
   private delete(id: number): void {
@@ -157,27 +164,43 @@ export class FormEditorPageComponent {
       });
   }
 
-  private load(detail: FormDetail): void {
+  private leaveIfNotDraft(detail: FormDetail): void {
     if (detail.status !== 'DRAFT') {
       void this.router.navigate(['/admin/forms', detail.id]);
-      return;
     }
-    this.form.patchValue({ topic: detail.topic, evaluatedMemberId: detail.evaluatedMember.id });
-    this.questions.clear();
-    detail.questions.forEach((question) => {
-      const group = newQuestion(question.type);
-      group.patchValue({
+  }
+
+  private toModel(detail: FormDetail | undefined): EditorModel {
+    if (!detail || detail.status !== 'DRAFT') {
+      return { topic: '', evaluatedMemberId: null, questions: [] };
+    }
+    return {
+      topic: detail.topic,
+      evaluatedMemberId: detail.evaluatedMember.id,
+      questions: detail.questions.map((question) => ({
+        ...this.newQuestion(question.type),
         text: question.text,
         required: question.required,
         scaleMin: question.scaleMin ?? null,
         scaleMax: question.scaleMax ?? null,
-      });
-      this.questions.push(group);
-    });
+      })),
+    };
+  }
+
+  private newQuestion(type: QuestionType): QuestionDraft {
+    const scale = type === 'SCALE';
+    return {
+      key: this.nextKey++,
+      text: '',
+      type,
+      required: true,
+      scaleMin: scale ? 1 : null,
+      scaleMax: scale ? 5 : null,
+    };
   }
 
   private toInput(): FormInput {
-    const value = this.form.getRawValue();
+    const value = this.model();
     return {
       topic: value.topic,
       evaluatedMemberId: value.evaluatedMemberId ?? 0,
@@ -194,26 +217,16 @@ export class FormEditorPageComponent {
   private showError(error: unknown) {
     const problem = problemOf(error);
     this.serverErrors.set(problem.errors ?? {});
-    this.generalError.set(problem.errors ? 'Javítsd a megjelölt mezőket.' : (problem.detail ?? ''));
+    this.actionError.set(problem.errors ? 'Javítsd a megjelölt mezőket.' : (problem.detail ?? ''));
     return EMPTY;
   }
 
   private notFound() {
-    this.generalError.set('Az űrlap nem található.');
+    this.loadError.set('Az űrlap nem található.');
     return EMPTY;
   }
 }
 
-function newQuestion(type: QuestionType): QuestionGroup {
-  const scale = type === 'SCALE';
-  return new FormGroup({
-    text: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(500)],
-    }),
-    type: new FormControl<QuestionType>(type, { nonNullable: true }),
-    required: new FormControl(true, { nonNullable: true }),
-    scaleMin: new FormControl<number | null>(scale ? 1 : null),
-    scaleMax: new FormControl<number | null>(scale ? 5 : null),
-  });
+function optionalNumber(value: unknown): number | undefined {
+  return value === undefined ? undefined : numberAttribute(value);
 }

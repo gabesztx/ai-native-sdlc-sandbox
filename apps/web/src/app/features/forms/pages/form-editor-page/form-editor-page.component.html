@@ -7,19 +7,19 @@
   <p-message severity="error" class="error">{{ generalError() }}</p-message>
 }
 
-<form class="editor" [formGroup]="form" (ngSubmit)="onSave()">
+<form class="editor" [formRoot]="editor" (submit)="onSave()">
   <p-card class="basics">
     <div class="fields">
       <div class="field">
+        @let topicInvalid = isInvalid(editor.topic, 'topic');
         <label for="topic">Fő téma</label>
         <input
           pInputText
           id="topic"
-          formControlName="topic"
-          maxlength="200"
+          [formField]="editor.topic"
           [fluid]="true"
-          [invalid]="isInvalid(form.controls.topic, 'topic')"
-          [attr.aria-invalid]="isInvalid(form.controls.topic, 'topic') ? 'true' : null"
+          [class.p-invalid]="topicInvalid"
+          [attr.aria-invalid]="topicInvalid ? 'true' : null"
         />
         @if (error('topic')) {
           <p-message severity="error" variant="simple" size="small" class="field-error">{{ error('topic') }}</p-message>
@@ -30,13 +30,13 @@
         <label for="evaluated">Kit értékelnek?</label>
         <p-select
           inputId="evaluated"
-          formControlName="evaluatedMemberId"
+          [formField]="editor.evaluatedMemberId"
           placeholder="Válassz csapattagot"
           optionLabel="name"
           optionValue="id"
           [options]="members()"
           [fluid]="true"
-          [invalid]="isInvalid(form.controls.evaluatedMemberId, 'evaluatedMemberId')"
+          [class.p-invalid]="isInvalid(editor.evaluatedMemberId, 'evaluatedMemberId')"
         />
         @if (error('evaluatedMemberId')) {
           <p-message severity="error" variant="simple" size="small" class="field-error">
@@ -48,9 +48,16 @@
   </p-card>
 
   <h2>Kérdések</h2>
-  <ol class="questions" formArrayName="questions">
-    @for (question of questions.controls; track question; let i = $index) {
-      <li class="question" [formGroupName]="i" animate.enter="fade-in-up" animate.leave="collapse-out">
+  <ol class="questions">
+    @for (question of questions(); track question.key; let i = $index) {
+      @let field = editor.questions[i];
+      @let textKey = 'questions[' + i + '].text';
+      @let textError = error(textKey);
+      @let textInvalid = isInvalid(field.text, textKey);
+      @let scaleMinError = error('questions[' + i + '].scaleMin');
+      @let scaleMaxError = error('questions[' + i + '].scaleMax');
+      @let scaleError = scaleMinError || scaleMaxError;
+      <li class="question" animate.enter="fade-in-up" animate.leave="collapse-out">
         <p-card>
           <div class="question-body">
             <div class="question-head">
@@ -58,7 +65,7 @@
               <p-tag
                 class="question-type"
                 severity="secondary"
-                [value]="question.controls.type.value === 'SCALE' ? 'Skála' : 'Szabad szöveg'"
+                [value]="question.type === 'SCALE' ? 'Skála' : 'Szabad szöveg'"
               />
               <span class="spacer"></span>
               <button
@@ -81,51 +88,52 @@
               <input
                 pInputText
                 [id]="'question-text-' + i"
-                formControlName="text"
-                maxlength="500"
+                [formField]="field.text"
                 [fluid]="true"
-                [invalid]="isInvalid(question.controls.text, 'questions[' + i + '].text')"
-                [attr.aria-invalid]="isInvalid(question.controls.text, 'questions[' + i + '].text') ? 'true' : null"
+                [class.p-invalid]="textInvalid"
+                [attr.aria-invalid]="textInvalid ? 'true' : null"
               />
-              @if (error('questions[' + i + '].text')) {
+              @if (textError) {
                 <p-message severity="error" variant="simple" size="small" class="field-error">
-                  {{ error('questions[' + i + '].text') }}
+                  {{ textError }}
                 </p-message>
               }
             </div>
 
-            @if (question.controls.type.value === 'SCALE') {
+            @if (question.type === 'SCALE') {
               <div class="scale">
                 <div class="field">
                   <label [for]="'scale-min-' + i">Legkisebb</label>
                   <p-inputnumber
                     [inputId]="'scale-min-' + i"
-                    formControlName="scaleMin"
+                    [formField]="field.scaleMin"
                     [useGrouping]="false"
                     [fluid]="true"
-                    [invalid]="error('questions[' + i + '].scaleMin') !== ''"
+                    [class.p-invalid]="scaleMinError !== ''"
+                    [inputStyleClass]="scaleMinError ? 'p-invalid' : undefined"
                   />
                 </div>
                 <div class="field">
                   <label [for]="'scale-max-' + i">Legnagyobb</label>
                   <p-inputnumber
                     [inputId]="'scale-max-' + i"
-                    formControlName="scaleMax"
+                    [formField]="field.scaleMax"
                     [useGrouping]="false"
                     [fluid]="true"
-                    [invalid]="error('questions[' + i + '].scaleMax') !== ''"
+                    [class.p-invalid]="scaleMaxError !== ''"
+                    [inputStyleClass]="scaleMaxError ? 'p-invalid' : undefined"
                   />
                 </div>
               </div>
-              @if (error('questions[' + i + '].scaleMin') || error('questions[' + i + '].scaleMax')) {
+              @if (scaleError) {
                 <p-message severity="error" variant="simple" size="small" class="field-error">
-                  {{ error('questions[' + i + '].scaleMin') || error('questions[' + i + '].scaleMax') }}
+                  {{ scaleError }}
                 </p-message>
               }
             }
 
             <div class="toggle">
-              <p-toggleswitch [inputId]="'question-required-' + i" formControlName="required" />
+              <p-toggleswitch [inputId]="'question-required-' + i" [formField]="field.required" />
               <label [for]="'question-required-' + i">Kötelező</label>
             </div>
           </div>
