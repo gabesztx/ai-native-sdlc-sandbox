@@ -145,12 +145,26 @@ public class JiraClient {
 		}
 	}
 
+	/**
+	 * The response body is Jira's own error explanation, never the request we sent, so
+	 * including it (unlike the request/Authorization header, which must never be logged)
+	 * is safe and is what makes a 400/403/404 actually diagnosable from the server log.
+	 */
 	private JiraImportException mapError(RestClientException e, String message) {
-		if (e instanceof RestClientResponseException responseException
-				&& responseException.getStatusCode().value() == 429) {
+		if (!(e instanceof RestClientResponseException responseException)) {
+			return new JiraImportException(message, e);
+		}
+		if (responseException.getStatusCode().value() == 429) {
 			return new JiraRateLimitException(message, retryAfter(responseException), e);
 		}
-		return new JiraImportException(message, e);
+		String detail = responseException.getResponseBodyAsString();
+		String fullMessage = message + " (HTTP " + responseException.getStatusCode().value() + ")"
+				+ (detail == null || detail.isBlank() ? "" : ": " + truncate(detail, 300));
+		return new JiraImportException(fullMessage, e);
+	}
+
+	private static String truncate(String text, int maxLength) {
+		return text.length() <= maxLength ? text : text.substring(0, maxLength) + "…";
 	}
 
 	private static Duration retryAfter(RestClientResponseException e) {
