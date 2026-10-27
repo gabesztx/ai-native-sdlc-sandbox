@@ -1,5 +1,7 @@
 package com.hugoboard.form;
 
+import com.hugoboard.review.FormResponse;
+import com.hugoboard.review.ReviewService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -19,8 +21,11 @@ public class FormController {
 
 	private final FormService formService;
 
-	public FormController(FormService formService) {
+	private final ReviewService reviewService;
+
+	public FormController(FormService formService, ReviewService reviewService) {
 		this.formService = formService;
+		this.reviewService = reviewService;
 	}
 
 	@GetMapping
@@ -53,6 +58,11 @@ public class FormController {
 	@PostMapping("/{formId}/send")
 	public FormDetail send(@PathVariable long formId) {
 		return formService.send(formId);
+	}
+
+	@GetMapping("/{formId}/responses")
+	public List<FormResponse> responses(@PathVariable long formId) {
+		return reviewService.responses(formId);
 	}
 
 }

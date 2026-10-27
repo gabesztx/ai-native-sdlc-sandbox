@@ -34,4 +34,34 @@ class AuthorizationApiTest extends ApiTestSupport {
 				.andExpect(status().isOk());
 	}
 
+	@Test
+	@DisplayName("AC14: belépés nélkül a kolléga végpont 401")
+	void memberEndpointRequiresLogin() throws Exception {
+		mvc.perform(get("/api/me/reviews")).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("AC14: belépés nélkül az admin űrlap-végpont 401")
+	void adminFormsRequireLogin() throws Exception {
+		mvc.perform(get("/api/admin/forms")).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("AC15: kollégaként az admin űrlap-végpont 403")
+	void memberCannotListForms() throws Exception {
+		long memberId = insertMember("Minta Anna");
+
+		mvc.perform(get("/api/admin/forms")
+				.header(HttpHeaders.AUTHORIZATION, bearer(memberToken(memberId))))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("AC16: adminként a kolléga végpont 403")
+	void adminCannotUseMemberEndpoint() throws Exception {
+		mvc.perform(get("/api/me/reviews")
+				.header(HttpHeaders.AUTHORIZATION, bearer(adminToken())))
+				.andExpect(status().isForbidden());
+	}
+
 }
