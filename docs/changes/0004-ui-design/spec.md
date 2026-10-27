@@ -24,7 +24,7 @@ az útvonalak, a jogosultságok, az API és az adatok nem változnak.
   nem.
 - **Színvilág:** semleges szürke felületek, egyetlen kiemelőszínnel (**indigó**). Ez adja a
   gombokat, linkeket, a kijelölt menüpontot és a fókuszjelzést.
-- **Betűtípus:** **Inter** (változtatható vastagságú változat), az app saját
+- **Betűtípus:** **Manrope** (változtatható vastagságú változat), az app saját
   csomagjából betöltve, külső betűtípus-szolgáltatás nélkül. Ha valamiért nem töltődik be,
   a rendszer saját sans-serif betűje (`system-ui`) lép a helyére.
 - **Ikonok:** PrimeIcons. Az ikonok a menüpontokat és az elsődleges műveleteket
@@ -44,7 +44,7 @@ az útvonalak, a jogosultságok, az API és az adatok nem változnak.
 | `@primeuix/themes` | `^3.1.0` | az Aura téma és a design tokenek |
 | `@angular/cdk` | `^22.2.0` | a PrimeNG kötelező peer függősége |
 | `primeicons` | `^8.0.2` | ikonkészlet |
-| `@fontsource-variable/inter` | `^5.3.0` | az Inter betűtípus, helyben kiszolgálva |
+| `@fontsource-variable/manrope` | `^5.3.0` | a Manrope betűtípus, helyben kiszolgálva |
 
 Grafikonkönyvtár (pl. Chart.js) **nem** kerül be: a kitöltöttséget a PrimeNG saját,
 grafikon nélküli folyamatjelzője mutatja.
@@ -456,11 +456,11 @@ teszt tartozik.
 Nincs. Eldöntve (2026-10-27):
 
 1. Kiemelőszín: indigó.
-2. Betűtípus: Inter (`@fontsource-variable/inter`), az app saját csomagjából.
+2. Betűtípus: Manrope (`@fontsource-variable/manrope`), az app saját csomagjából.
 3. Mobil töréspont: 768 px.
 4. A kolléga mobilon nem kap alsó menüsávot (csak egy menüpontja van); az adminnál
    megjelenik.
 5. Az új függőségek (`primeng`, `@primeuix/themes`, `@angular/cdk`, `primeicons`,
-   `@fontsource-variable/inter`) jóváhagyva.
+   `@fontsource-variable/manrope`) jóváhagyva.
 6. Az intent nice-to-have listájából a jelvények, a toastok, az animált megerősítés, az
    ikonos üres állapotok és a mobilon rögzített Beküldés gomb bekerül; a többi később.

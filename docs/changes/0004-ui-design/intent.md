@@ -114,7 +114,7 @@ kapcsolóval vált).
 
 Nincs. Eldöntve (2026-10-27):
 
-1. **Betűtípus:** Inter, az app saját csomagjából kiszolgálva, nem Google Fonts-ról.
+1. **Betűtípus:** Manrope, az app saját csomagjából kiszolgálva, nem Google Fonts-ról.
 2. **Kiemelőszín:** indigó, semleges szürke felületekkel.
 3. **Kitöltöttség megjelenítése:** a PrimeNG folyamatjelzője, saját SVG-grafikon nélkül.
    A grafikonok a `0003`-ra várnak.
