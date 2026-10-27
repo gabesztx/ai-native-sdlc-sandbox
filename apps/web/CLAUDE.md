@@ -10,6 +10,17 @@ mintát, könyvtárat vagy struktúrát.
 Angular 22, TypeScript strict, SCSS, RxJS 7.2+, Vitest. **Zoneless**: nincs `zone.js`;
 az állapotváltozást signal jelzi, nem `setTimeout` vagy manuális change detection.
 
+## PrimeNG licenc
+
+- A PrimeNG a PrimeUI License alá tartozik (személyes Community kulcs). A kulcs az
+  `apps/web/primeui-license.key` fájlban van, gitignore-olva. Soha ne commitold, és ne
+  írd be kódba.
+- Az `npm start` és az `npm run build` `--define PRIMEUI_LICENSE=...` kapcsolóval adja be
+  a kulcsot; a `core/theme/primeui-license.ts` olvassa ki, és a `providePrimeNG({ license })`
+  kapja meg.
+- Kulcs nélkül is működik minden, csak megjelenik az „Invalid PrimeUI License” jelzés. A
+  jelzést elrejteni vagy a licencellenőrzést kiiktatni tilos (a licenc tiltja).
+
 ## Angular CLI
 
 - Új Angular-elemet mindig az Angular CLI-vel hozz létre, ne kézzel:

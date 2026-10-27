@@ -7,6 +7,7 @@ import { provideApiConfiguration } from './core/api/api-configuration';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { HugoPreset } from './core/theme/hugo-preset';
+import { primeUiLicense } from './core/theme/primeui-license';
 import { ThemeService } from './core/theme/theme.service';
 
 export const appConfig: ApplicationConfig = {
@@ -16,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     provideApiConfiguration(''),
     providePrimeNG({
+      license: primeUiLicense,
       theme: {
         preset: HugoPreset,
         options: {

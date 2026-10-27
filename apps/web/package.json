@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "start": "ng serve --define \"PRIMEUI_LICENSE='$(cat primeui-license.key 2>/dev/null)'\"",
+    "build": "ng build --define \"PRIMEUI_LICENSE='$(cat primeui-license.key 2>/dev/null)'\"",
     "test": "ng test --watch=false",
     "lint": "ng lint",
     "api:client": "ng-openapi-gen --config ng-openapi-gen.json"
