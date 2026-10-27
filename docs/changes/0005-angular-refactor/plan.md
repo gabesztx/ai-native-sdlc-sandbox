@@ -117,3 +117,27 @@ tesztre, a lintre, kódkeresésre és kézi ellenőrzésre épül.
 - Üres `shared/pipes/` mappa. Pipe-ra most nincs szükség; a `status-labels` és az
   `initials` a használó komponens mappájába kerül. A mappa akkor jön létre, amikor az
   első pipe megszületik.
+
+## Eltérések a build során (2026-10-27)
+
+1. **`rxResource` nem került az id-alapú oldalakra és a menüjelvényekre.**
+   - **Az ok:** az `rxResource` betöltés közben pending taskot tart (Angular
+     `_resource-chunk`, `pendingTasks.add()`). A részletek, a szerkesztő és a kitöltés
+     tesztjei viszont még a kérés flush-a előtt `await whenStable()`-t hívnak, ezért
+     elakadnak (5 s timeout). A shell-tesztek ugyanígy elakadnak, mert a jelvény-kérést
+     soha nem flush-olják.
+   - **A döntés (a felhasználóé):**
+     - a 3 id-alapú oldalon `toSignal(toObservable(this.id).pipe(switchMap(...)))`, plusz
+       `linkedSignal` a módosítás utáni értékhez;
+     - a menüjelvények a mostani `toSignal`-on maradnak;
+     - `rxResource` a 3 listaoldalon és a szerkesztő csapattag-listáján van.
+   - **Az érintett AC-k:** az AC11 („nincs `toObservable`”) és az AC12 menüjelvény-része
+     nem teljesül; a kódban és a CLAUDE.md-ben ez a szabály.
+2. **A `[formField]` mellé a compiler nem enged `[invalid]` kötést és `maxlength`
+   attribútumot** (NG8022).
+   - A PrimeNG hibás állapota `[class.p-invalid]`, a `p-inputnumber`-en `[inputStyleClass]`
+     is.
+   - A `maxlength`-et a `maxLength` sémaszabályból a Signal Forms teszi rá a mezőre.
+   - Ellenőrizni kell kézzel (AC19): a piros keret és a karakterlimit a mostani legyen.
+3. **Az 1. lépésben a régi `src/app/api/` mappát a felhasználó törölte kézzel**, mert a
+   `rm -rf` a `.claude/settings.json`-ban tiltva van.

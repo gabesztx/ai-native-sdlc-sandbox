@@ -13,8 +13,10 @@ az állapotváltozást signal jelzi, nem `setTimeout` vagy manuális change dete
 ## Angular CLI
 
 - Új Angular-elemet mindig az Angular CLI-vel hozz létre, ne kézzel:
-  `npx ng generate component features/<feature>/<nev>` (ugyanígy `service`, `guard`,
-  `pipe`, `directive`). A parancsot az `apps/web` mappában futtasd.
+  `npx ng generate component features/<feature>/pages/<nev>` (komponensnél
+  `features/<feature>/components/<nev>`, szolgáltatásnál
+  `npx ng generate service features/<feature>/services/<nev>`; ugyanígy `guard`, `pipe`,
+  `directive`). A parancsot az `apps/web` mappában futtasd.
 - Angular-csomag hozzáadása: `npx ng add <csomag>`; frissítés: `npx ng update`.
 - Az `angular.json` sémabeállításai miatt a generált komponens már OnPush, SCSS és
   `.component` fájlnevű; utána csak a szabályok szerinti tartalmat írd bele.
@@ -23,14 +25,26 @@ az állapotváltozást signal jelzi, nem `setTimeout` vagy manuális change dete
 
 ```
 src/app/
-  core/                 app-szintű szolgáltatások, guardok, interceptorok
-  features/<feature>/   oldalak és csak ehhez a feature-höz tartozó komponensek
-                        (pl. features/forms/, features/reviews/, features/dashboard/)
-  shared/components/    több feature-ben is használt komponensek
-  shared/models/        csak felületi típusok (pl. szűrőállapot) — API-típus soha
-  shared/animations/    közös @keyframes és animáció-osztályok
-  api/                  az openapi.json-ból generált kliens — kézzel ne szerkeszd
+  core/                         app-szintű, egyetlen példány
+    api/                        az openapi.json-ból generált kliens (gitignored) — kézzel ne szerkeszd
+    auth/  http/  layout/  theme/
+  features/<feature>/           pl. features/forms/, features/reviews/, features/dashboard/
+    pages/<oldal>/              route-célpont komponensek
+    components/<komponens>/     csak ehhez a feature-höz tartozó komponensek
+    services/                   a feature szolgáltatásai (a generált service-ek fölött)
+    <feature>.routes.ts         a feature route-jai
+  shared/
+    components/                 több feature-ben is használt komponensek
+    pipes/                      közös pipe-ok
+    models/                     csak felületi típusok (pl. szűrőállapot) — API-típus soha
+    animations/                 közös @keyframes és animáció-osztályok
 ```
+
+- A `core/`, a `shared/` és a feature gyökerében nincs gazdátlan helperfájl; a feature
+  gyökerében csak a `<feature>.routes.ts` áll. Egyetlen komponens helpere a komponens
+  mappájába kerül.
+- Feature nem importál másik feature-ből. Ha két feature ugyanazt az adatot kéri, mindkettő
+  a saját szolgáltatásán keresztül hívja a generált service-t.
 
 ## Komponensek
 
@@ -44,6 +58,12 @@ src/app/
 - DI: `inject()`, nem konstruktor.
 - Signal API: `input()`, `output()`, `model()` — nem `@Input()` / `@Output()`.
 - Control flow: `@if`, `@for (… ; track item.id)`, `@switch` — nem `*ngIf` / `*ngFor`.
+- `@let`: ha egy blokkon belül ugyanazt a signal- vagy metódushívást többször olvasnád.
+- `@defer (on immediate)` a fő tartalom alatti, nehéz részekhez (külön lazy chunk),
+  `@placeholder`-rel. Más trigger (`on idle`, `on viewport`) nem, mert jsdom-ban a tesztek
+  nem látják a tartalmat.
+- Host-kötés a `@Component` / `@Directive` `host: {}` mezőjével; `@HostBinding` /
+  `@HostListener` nem.
 
 ### Minta
 
@@ -78,10 +98,26 @@ export class UserProfileComponent {
 
 ## API-kliens és modellek
 
-- Az API-típusok és hívások a generált kliensből (`api/`) jönnek. API-típust kézzel
+- Az API-típusok és hívások a generált kliensből (`core/api/`) jönnek. API-típust kézzel
   ne írj, ne másolj le.
-- Komponens nem hív közvetlenül `HttpClient`-et; a generált klienst vagy egy feature-
-  szolgáltatást használ.
+- A generátor (`ng-openapi-gen`, `services: true`, `promises: false`) tagenként egy
+  service-t ad (pl. `FormControllerService`), műveletenként egy Observable-t visszaadó
+  metódussal (pl. `getForm({ formId })`).
+- Generált service-t csak szolgáltatás injektál (`features/<feature>/services/` vagy
+  `core/`). Komponens a feature-szolgáltatást használja, a generált service-t és a
+  `HttpClient`-et soha.
+- A generátor belső részleteire (`fn/`, `RequestBuilder`, `StrictHttpResponse`,
+  `rootUrl`, `.body`) kézzel írt kód nem hivatkozik.
+
+```typescript
+@Service()
+export class FormsService {
+  private formApi = inject(FormControllerService);
+  public get(formId: number): Observable<FormDetail> {
+    return this.formApi.getForm({ formId });
+  }
+}
+```
 
 ## Signals és reaktivitás
 
@@ -90,8 +126,15 @@ export class UserProfileComponent {
 - `effect()` csak valódi side effecthez (DOM, localStorage) — adatszinkronra nem.
 - Observable → signal: `toSignal(obs$, { initialValue: [] })`.
 - Signal → Observable: `toObservable(mySignal)`, utána `.pipe(...)`.
-- HTTP + signal-alapú újratöltés: `rxResource` (az Angular 22-beli státuszát a váz
-  készítésekor ellenőrizni kell).
+- Oldal adata paraméter nélkül (lista): `rxResource`. A hibát a streamben `catchError`
+  kezeli, így a resource nem kerül hibaállapotba.
+- Route-paramétertől függő oldal adata: `toSignal(toObservable(this.id).pipe(switchMap(...)))`,
+  a módosítás után frissülő értékhez `linkedSignal`. Itt **ne** `rxResource`: az
+  betöltés közben pending taskot tart, és a `whenStable()`-t váró tesztek elakadnak.
+- Az összetartozó adat (pl. űrlap és válaszai) egy láncban, egy signalban jön, hogy a
+  kérések sorrendje determinisztikus legyen.
+- Számot váró route-paraméter: `input.required({ transform: numberAttribute })`; a
+  komponensben nincs `Number(...)`.
 
 Keresés — signal → observable → HTTP → signal:
 
@@ -108,14 +151,19 @@ public results = toSignal(
 );
 ```
 
-Reaktív adatlekérés `rxResource`-szal:
+Lista `rxResource`-szal:
 
 ```typescript
-public userId = signal(1);
-public user = rxResource({
-  params: () => ({ id: this.userId() }),
-  stream: ({ params }) => this.api.getUser(params.id),
-});
+private formsResource = rxResource({ stream: () => this.formsService.list().pipe(catchError(() => of([]))) });
+public forms = computed(() => this.formsResource.value());
+public loading = computed(() => this.formsResource.isLoading());
+```
+
+Route-paramétertől függő adat:
+
+```typescript
+public id = input.required({ transform: numberAttribute });
+private loaded = toSignal(toObservable(this.id).pipe(switchMap((id) => this.reviewsService.get(id))));
 ```
 
 ## RxJS
@@ -155,8 +203,30 @@ Az első injection contextben, a második pl. `ngOnInit`-ben.
 
 ## Űrlapok és routing
 
-- Reactive Forms, typed controls (`FormControl<string>`); template-driven forms nem.
-- Funkcionális route guard; lazy loading `loadComponent`-tel.
+- Űrlap: **Signal Forms** (`@angular/forms/signals`). Reactive Forms (`FormGroup`,
+  `FormControl`, `FormArray`, `FormBuilder`, `ReactiveFormsModule`) és template-driven
+  forms nem.
+- A modell egy `signal` (vagy betöltött adatból `linkedSignal`), az űrlap `form(model, schema)`.
+- Kötés: `<form [formRoot]="editor" (submit)="onSave()">` és `[formField]="editor.topic"`;
+  PrimeNG mezőkön is.
+- Validáció a sémában: `required`, `maxLength`, `applyEach` tömbelemekre, `validate`
+  egyedi szabályra. A `maxlength` attribútumot és a `[invalid]` kötést a `[formField]`
+  mellé nem írjuk; a PrimeNG hibás állapota `[class.p-invalid]`
+  (`p-inputnumber`-en `[inputStyleClass]` is).
+- Beküldés: érvénytelen űrlapnál `this.editor().markAsTouched()`, és nincs kérés.
+- Dinamikus listában minden elem kap egy kliens oldali `key`-t, ez a `track` kulcsa.
+
+```typescript
+private model = signal({ topic: '', questions: [] as QuestionDraft[] });
+public editor = form(this.model, (path) => {
+  required(path.topic);
+  maxLength(path.topic, 200);
+  applyEach(path.questions, (question) => required(question.text));
+});
+```
+
+- Funkcionális route guard. Feature-enként `<feature>.routes.ts` `loadComponent`-tel; az
+  `app.routes.ts` `loadChildren`-nel tölti be.
 
 ## Stílus
 
@@ -218,7 +288,9 @@ nevekkel és kis függvényekkel legyen olvasható. Ez a frontendre felülírja 
 - Viselkedést tesztelj (amit a felhasználó lát és tesz, a komponens publikus API-ja),
   ne belső megvalósítást.
 - HTTP-t valódi hívás helyett `provideHttpClientTesting()` / `HttpTestingController`
-  helyettesíti.
+  helyettesíti. Oldal-komponenst a `src/testing/http-test-setup.ts` `createPage`
+  függvényével hozz létre; az egy change detectiont is lefuttat, így az `rxResource`
+  kérése azonnal kimegy.
 - Ha a teszt egy spec elfogadási kritériumát fedi, a teszt neve hivatkozzon rá (pl.
   `AC24: beküldés után Beküldve állapot`).
 
@@ -226,8 +298,10 @@ nevekkel és kis függvényekkel legyen olvasható. Ez a frontendre felülírja 
 
 Az `npm run check` elbukik, ha sérül: `any` típus; hiányzó `public` / `private`;
 `protected`; import `rxjs/operators`-ból vagy `@angular/animations`-ből; OnPush
-hiánya; inline template / style; `*ngIf` / `*ngFor`; `@Input()` / `@Output()`.
-A pontos szabálylistát az app váza állítja be.
+hiánya; inline template / style; `*ngIf` / `*ngFor`; `@Input()` / `@Output()`;
+`@HostBinding()` / `@HostListener()`; Reactive Forms import; import a generált kliens
+`fn/` mappájából; komponensben `HttpClient` vagy generált service import; feature-ök
+közötti import. A pontos szabálylista: `eslint.config.js`.
 
 ## Anti-patterns (gyors lista)
 
@@ -239,4 +313,8 @@ helyett · ❌ `standalone: true` · ❌ `@Input` / `@Output` · ❌ `*ngIf` / `
 `error` ága, `subscribe({ next, error })` · ❌ `throwError()` kezelhető hibánál ·
 ❌ `@angular/animations`, `trigger()` / `state()` DSL, `provideAnimations()`, `[@trigger]` ·
 ❌ animációs logika `.ts`-ben · ❌ közös keyframe komponens-SCSS-ben · ❌ inline DOM
-stílusmanipuláció eseménykezelőben · ❌ kézzel írt API-típus · ❌ Grid layout
+stílusmanipuláció eseménykezelőben · ❌ kézzel írt API-típus · ❌ Grid layout ·
+❌ Reactive Forms · ❌ `@HostBinding` / `@HostListener` · ❌ generált `fn/` import ·
+❌ generált service vagy `HttpClient` komponensben · ❌ feature-közi import ·
+❌ `rxResource` route-paraméteres oldalon · ❌ `@defer` `on idle` / `on viewport` ·
+❌ gazdátlan helperfájl a `core/` / `shared/` / feature gyökerében
