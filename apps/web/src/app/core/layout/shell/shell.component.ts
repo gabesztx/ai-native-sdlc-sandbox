@@ -32,11 +32,18 @@ export class ShellComponent {
   public menu = computed(() => (this.store.role() === 'ADMIN' ? ADMIN_MENU : MEMBER_MENU));
 
   public onLogout(): void {
+    const refreshToken = this.store.refreshToken();
+    const cleanup = (): void => {
+      this.store.clear();
+      void this.router.navigateByUrl('/login');
+    };
+    if (!refreshToken) {
+      cleanup();
+      return;
+    }
     this.authApi
-      .logout(this.store.refreshToken())
+      .logout(refreshToken)
       .pipe(catchError(() => EMPTY))
-      .subscribe();
-    this.store.clear();
-    void this.router.navigateByUrl('/login');
+      .subscribe({ complete: cleanup });
   }
 }

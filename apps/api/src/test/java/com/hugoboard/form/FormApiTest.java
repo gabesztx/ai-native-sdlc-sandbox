@@ -57,7 +57,8 @@ class FormApiTest extends ApiTestSupport {
 			"{\"topic\":\"T\",\"evaluatedMemberId\":%d,\"questions\":[{\"text\":\"\",\"type\":\"TEXT\",\"required\":true}]}",
 			"{\"topic\":\"T\",\"evaluatedMemberId\":%d,\"questions\":[{\"text\":\"Q\",\"type\":\"STAR\",\"required\":true}]}",
 			"{\"topic\":\"T\",\"evaluatedMemberId\":%d,\"questions\":[{\"text\":\"Q\",\"type\":\"SCALE\",\"required\":true,\"scaleMin\":1}]}",
-			"{\"topic\":\"T\",\"evaluatedMemberId\":%d,\"questions\":[{\"text\":\"Q\",\"type\":\"SCALE\",\"required\":true,\"scaleMin\":5,\"scaleMax\":5}]}" })
+			"{\"topic\":\"T\",\"evaluatedMemberId\":%d,\"questions\":[{\"text\":\"Q\",\"type\":\"SCALE\",\"required\":true,\"scaleMin\":5,\"scaleMax\":5}]}",
+			"{\"topic\":\"T\",\"evaluatedMemberId\":%d,\"questions\":[null]}" })
 	@DisplayName("AC18: hiányos adatokkal 400 mezőnkénti hibával, és nem jön létre űrlap")
 	void rejectsInvalidForm(String template) throws Exception {
 		postForm(template.formatted(evaluatedId))

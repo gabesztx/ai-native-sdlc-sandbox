@@ -51,6 +51,23 @@ class TokenLifecycleApiTest extends ApiTestSupport {
 	}
 
 	@Test
+	@DisplayName("AC7: lejárt access tokennel is visszavonható a munkamenet a refresh token alapján")
+	void logoutRevokesSessionEvenWithExpiredAccessToken() throws Exception {
+		String login = adminLoginJson();
+		String access = JsonPath.read(login, "$.accessToken");
+		String refresh = JsonPath.read(login, "$.refreshToken");
+		clock.advance(Duration.ofMinutes(15).plusSeconds(1));
+
+		mvc.perform(post("/api/auth/logout")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json("refreshToken", refresh)))
+				.andExpect(status().isNoContent());
+
+		me(access).andExpect(status().isUnauthorized());
+		refresh(refresh).andExpect(status().isUnauthorized());
+	}
+
+	@Test
 	@DisplayName("AC9: refresh után az új pár működik, a régi refresh token 401")
 	void refreshRotatesTokens() throws Exception {
 		String login = adminLoginJson();
@@ -75,12 +92,30 @@ class TokenLifecycleApiTest extends ApiTestSupport {
 	}
 
 	@Test
+	@DisplayName("AC10: közvetlenül a 15 perc letelte előtt az access token még működik")
+	void accessTokenStillWorksJustBeforeExpiry() throws Exception {
+		String access = adminToken();
+		clock.advance(Duration.ofMinutes(15).minusSeconds(1));
+
+		me(access).andExpect(status().isOk());
+	}
+
+	@Test
 	@DisplayName("AC11: lejárt refresh tokennel a frissítés 401")
 	void expiredRefreshTokenIsRejected() throws Exception {
 		String refresh = JsonPath.read(adminLoginJson(), "$.refreshToken");
 		clock.advance(Duration.ofHours(8).plusSeconds(1));
 
 		refresh(refresh).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("AC11: közvetlenül a 8 óra letelte előtt a refresh token még működik")
+	void refreshTokenStillWorksJustBeforeExpiry() throws Exception {
+		String refresh = JsonPath.read(adminLoginJson(), "$.refreshToken");
+		clock.advance(Duration.ofHours(8).minusSeconds(1));
+
+		refresh(refresh).andExpect(status().isOk());
 	}
 
 	private ResultActions me(String accessToken) throws Exception {

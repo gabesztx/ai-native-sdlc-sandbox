@@ -86,8 +86,12 @@ public class AuthService {
 	}
 
 	@Transactional
-	public void logout(CurrentUser user) {
-		sessions.revoke(user.sessionId(), format(now()));
+	public void logout(String refreshToken) {
+		// Revocation is proven by presenting the refresh token itself, not by a valid
+		// access token: the access token may already have expired by the time the user
+		// clicks "logout", and the session must still be revocable in that case.
+		sessions.findByRefreshTokenHash(tokens.hash(refreshToken))
+				.ifPresent(session -> sessions.revoke(session.id(), format(now())));
 	}
 
 	public Optional<CurrentUser> authenticate(String accessToken) {

@@ -65,6 +65,34 @@ class ReviewSubmitApiTest extends ReviewTestSupport {
 		assertStillPending();
 	}
 
+	@Test
+	@DisplayName("AC34: szöveges kérdésre szám 400")
+	void numberOnTextQuestionIsRejected() throws Exception {
+		submit(anna, reviewId, "[{\"questionId\":" + scaleQuestionId + ",\"scaleValue\":3},"
+				+ "{\"questionId\":" + textQuestionId + ",\"scaleValue\":3}]")
+				.andExpect(status().isBadRequest());
+
+		assertStillPending();
+	}
+
+	@Test
+	@DisplayName("AC34: nem egész skálaérték (tizedestört) 400, nem kerekedik")
+	void nonIntegerScaleValueIsRejected() throws Exception {
+		submit(anna, reviewId, "[{\"questionId\":" + scaleQuestionId + ",\"scaleValue\":3.5},"
+				+ "{\"questionId\":" + textQuestionId + ",\"textValue\":\"ok\"}]")
+				.andExpect(status().isBadRequest());
+
+		assertStillPending();
+	}
+
+	@Test
+	@DisplayName("Null elem a válaszlistában 400, nem 500")
+	void nullAnswerElementIsRejected() throws Exception {
+		submit(anna, reviewId, "[null]").andExpect(status().isBadRequest());
+
+		assertStillPending();
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = { "", "   " })
 	@DisplayName("AC35: kötelező szöveges kérdésre üres vagy csak szóköz 400")

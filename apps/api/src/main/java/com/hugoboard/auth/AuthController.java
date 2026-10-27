@@ -42,8 +42,8 @@ public class AuthController {
 	@PostMapping("/logout")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "logout")
-	public void logout(CurrentUser user, @RequestBody(required = false) LogoutRequest request) {
-		authService.logout(user);
+	public void logout(@Valid @RequestBody LogoutRequest request) {
+		authService.logout(request.refreshToken());
 	}
 
 	@GetMapping("/me")

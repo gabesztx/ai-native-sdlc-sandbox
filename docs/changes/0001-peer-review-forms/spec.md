@@ -246,7 +246,7 @@ Mind kolléga belépést igényel: belépés nélkül `401`, adminként `403`.
 
 // ReviewSummary
 {
-  "id": 21, "topic": "Csapatmunka Q4",
+  "id": 21, "formId": 7, "topic": "Csapatmunka Q4",
   "evaluatedMember": { "id": 3, "name": "Teszt Elek" },
   "status": "PENDING" | "SUBMITTED", "submittedAt": null
 }

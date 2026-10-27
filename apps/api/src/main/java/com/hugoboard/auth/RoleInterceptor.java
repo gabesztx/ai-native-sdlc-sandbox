@@ -6,13 +6,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
 
 @Component
 class RoleInterceptor implements HandlerInterceptor {
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-		String path = request.getRequestURI().substring(request.getContextPath().length());
+		// Decide on the pattern Spring actually matched, not on the raw URI: an encoded
+		// or matrix-parameter path (/api/%61dmin/…, /api/admin;x=1/…) reaches the same
+		// handler but would slip past a prefix check on the raw URI.
+		Object pattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+		if (!(pattern instanceof String path)) {
+			return true;
+		}
 		Role required = requiredRole(path);
 		boolean authenticationRequired = required != null || isAnyUserPath(path);
 		if (!authenticationRequired) {
@@ -39,8 +46,7 @@ class RoleInterceptor implements HandlerInterceptor {
 	}
 
 	private static boolean isAnyUserPath(String path) {
-		return path.equals("/api/auth/me") || path.equals("/api/auth/logout")
-				|| path.startsWith("/api/dashboard");
+		return path.equals("/api/auth/me");
 	}
 
 }

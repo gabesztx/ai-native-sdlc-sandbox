@@ -32,10 +32,8 @@ export class AuthApiService {
     );
   }
 
-  public logout(refreshToken: string | null): Observable<void> {
-    return logout(this.http, this.config.rootUrl, { body: { refreshToken: refreshToken ?? undefined } }).pipe(
-      map(() => undefined),
-    );
+  public logout(refreshToken: string): Observable<void> {
+    return logout(this.http, this.config.rootUrl, { body: { refreshToken } }).pipe(map(() => undefined));
   }
 
   public teamMembers(): Observable<TeamMember[]> {
