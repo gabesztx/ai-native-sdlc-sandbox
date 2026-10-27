@@ -77,6 +77,30 @@ public abstract class ApiTestSupport {
 		return JsonPath.read(memberLoginJson(memberId), "$.accessToken");
 	}
 
+	protected static final String SCALE_AND_TEXT_QUESTIONS = """
+			[{"text":"Mennyire segítőkész?","type":"SCALE","required":true,"scaleMin":1,"scaleMax":5},
+			 {"text":"Miben fejlődhetne?","type":"TEXT","required":false}]""";
+
+	protected static String formJson(String topic, long evaluatedMemberId, String questionsJson) {
+		return "{\"topic\":\"" + topic + "\",\"evaluatedMemberId\":" + evaluatedMemberId
+				+ ",\"questions\":" + questionsJson + "}";
+	}
+
+	protected long createForm(String adminToken, long evaluatedMemberId, String questionsJson) throws Exception {
+		String body = mvc.perform(post("/api/admin/forms")
+				.header("Authorization", bearer(adminToken))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(formJson("Csapatmunka Q4", evaluatedMemberId, questionsJson)))
+				.andExpect(status().isCreated())
+				.andReturn().getResponse().getContentAsString();
+		return ((Number) JsonPath.read(body, "$.id")).longValue();
+	}
+
+	protected void sendForm(String adminToken, long formId) throws Exception {
+		mvc.perform(post("/api/admin/forms/" + formId + "/send").header("Authorization", bearer(adminToken)))
+				.andExpect(status().isOk());
+	}
+
 	protected static String bearer(String token) {
 		return "Bearer " + token;
 	}
