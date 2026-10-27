@@ -24,6 +24,7 @@ export function createPage<T>(component: Type<T>, inputs: Record<string, unknown
   const navigateTo = vi.spyOn(router, 'navigate').mockResolvedValue(true);
   const fixture = TestBed.createComponent(component);
   Object.entries(inputs).forEach(([name, value]) => fixture.componentRef.setInput(name, value));
+  fixture.detectChanges();
   return {
     fixture,
     backend: TestBed.inject(HttpTestingController),

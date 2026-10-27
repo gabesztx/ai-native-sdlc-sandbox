@@ -1,9 +1,8 @@
 import { Component, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { Card } from 'primeng/card';
 import { Skeleton } from 'primeng/skeleton';
-import { TeamMember } from '../../../../core/api/models';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { MemberAvatarComponent } from '../../../../shared/components/member-avatar/member-avatar.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
@@ -18,9 +17,8 @@ import { TeamService } from '../../services/team.service';
 export class TeamPageComponent {
   private teamService = inject(TeamService);
 
-  public members = toSignal<TeamMember[] | undefined>(this.teamService.list().pipe(catchError(() => of([]))), {
-    initialValue: undefined,
-  });
-  public loading = computed(() => this.members() === undefined);
+  private membersResource = rxResource({ stream: () => this.teamService.list().pipe(catchError(() => of([]))) });
+  public members = computed(() => this.membersResource.value());
+  public loading = computed(() => this.membersResource.isLoading());
   public skeletonRows = [1, 2, 3, 4];
 }

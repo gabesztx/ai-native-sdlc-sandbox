@@ -1,12 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Skeleton } from 'primeng/skeleton';
-import { ReviewSummary } from '../../../../core/api/models';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { StatTileComponent } from '../../../../shared/components/stat-tile/stat-tile.component';
@@ -34,10 +33,9 @@ import { ReviewsService } from '../../services/reviews.service';
 export class ReviewListPageComponent {
   private reviewsService = inject(ReviewsService);
 
-  public reviews = toSignal<ReviewSummary[] | undefined>(this.reviewsService.list().pipe(catchError(() => of([]))), {
-    initialValue: undefined,
-  });
-  public loading = computed(() => this.reviews() === undefined);
+  private reviewsResource = rxResource({ stream: () => this.reviewsService.list().pipe(catchError(() => of([]))) });
+  public reviews = computed(() => this.reviewsResource.value());
+  public loading = computed(() => this.reviewsResource.isLoading());
   public stats = computed(() => {
     const reviews = this.reviews() ?? [];
     return {

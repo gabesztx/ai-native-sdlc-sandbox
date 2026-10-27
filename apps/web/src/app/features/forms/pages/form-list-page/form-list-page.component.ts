@@ -1,6 +1,6 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
@@ -42,10 +42,9 @@ export class FormListPageComponent {
   private router = inject(Router);
 
   public isMobile = inject(BreakpointService).isMobile;
-  public forms = toSignal<FormSummary[] | undefined>(this.formsService.list().pipe(catchError(() => of([]))), {
-    initialValue: undefined,
-  });
-  public loading = computed(() => this.forms() === undefined);
+  private formsResource = rxResource({ stream: () => this.formsService.list().pipe(catchError(() => of([]))) });
+  public forms = computed(() => this.formsResource.value());
+  public loading = computed(() => this.formsResource.isLoading());
   public stats = computed(() => {
     const forms = this.forms() ?? [];
     const sent = forms.filter((form) => form.status === 'SENT');
