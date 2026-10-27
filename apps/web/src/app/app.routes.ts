@@ -6,8 +6,7 @@ export const routes: Routes = [
   {
     path: 'login',
     canActivate: [guestGuard],
-    loadComponent: () =>
-      import('./features/auth/pages/login-page/login-page.component').then((m) => m.LoginPageComponent),
+    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.authRoutes),
   },
   {
     path: '',
@@ -19,36 +18,11 @@ export const routes: Routes = [
         children: [
           {
             path: 'forms',
-            loadComponent: () =>
-              import('./features/forms/pages/form-list-page/form-list-page.component').then(
-                (m) => m.FormListPageComponent,
-              ),
-          },
-          {
-            path: 'forms/new',
-            loadComponent: () =>
-              import('./features/forms/pages/form-editor-page/form-editor-page.component').then(
-                (m) => m.FormEditorPageComponent,
-              ),
-          },
-          {
-            path: 'forms/:id',
-            loadComponent: () =>
-              import('./features/forms/pages/form-detail-page/form-detail-page.component').then(
-                (m) => m.FormDetailPageComponent,
-              ),
-          },
-          {
-            path: 'forms/:id/edit',
-            loadComponent: () =>
-              import('./features/forms/pages/form-editor-page/form-editor-page.component').then(
-                (m) => m.FormEditorPageComponent,
-              ),
+            loadChildren: () => import('./features/forms/forms.routes').then((m) => m.formsRoutes),
           },
           {
             path: 'team',
-            loadComponent: () =>
-              import('./features/team/pages/team-page/team-page.component').then((m) => m.TeamPageComponent),
+            loadChildren: () => import('./features/team/team.routes').then((m) => m.teamRoutes),
           },
           { path: '', pathMatch: 'full', redirectTo: 'forms' },
         ],
@@ -56,22 +30,7 @@ export const routes: Routes = [
       {
         path: 'reviews',
         canActivate: [authGuard('MEMBER')],
-        children: [
-          {
-            path: '',
-            loadComponent: () =>
-              import('./features/reviews/pages/review-list-page/review-list-page.component').then(
-                (m) => m.ReviewListPageComponent,
-              ),
-          },
-          {
-            path: ':id',
-            loadComponent: () =>
-              import('./features/reviews/pages/review-fill-page/review-fill-page.component').then(
-                (m) => m.ReviewFillPageComponent,
-              ),
-          },
-        ],
+        loadChildren: () => import('./features/reviews/reviews.routes').then((m) => m.reviewsRoutes),
       },
       { path: '', pathMatch: 'full', canActivate: [homeRedirectGuard], children: [] },
     ],
