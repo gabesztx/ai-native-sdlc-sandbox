@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { Avatar } from 'primeng/avatar';
-import { initials } from '../../initials';
+import { initials } from './initials';
 
 @Component({
   imports: [Avatar],

@@ -20,7 +20,7 @@ import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { AnswerInput, Question, ReviewDetail } from '../../../../core/api/models';
 import { problemOf } from '../../../../core/http/problem-detail';
-import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ReviewsApiService } from '../../reviews-api.service';
 
 const MAX_TEXT_LENGTH = 2000;

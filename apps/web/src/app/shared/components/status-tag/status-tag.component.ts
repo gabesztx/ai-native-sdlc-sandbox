@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { Tag } from 'primeng/tag';
-import { FORM_STATUS_LABELS, REVIEW_STATUS_LABELS, STATUS_SEVERITIES } from '../../status-labels';
+import { FORM_STATUS_LABELS, REVIEW_STATUS_LABELS, STATUS_SEVERITIES } from './status-labels';
 
 const STATUS_LABELS: Record<string, string> = { ...FORM_STATUS_LABELS, ...REVIEW_STATUS_LABELS };
 

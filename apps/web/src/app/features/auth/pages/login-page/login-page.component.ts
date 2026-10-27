@@ -11,7 +11,7 @@ import { Select } from 'primeng/select';
 import { AuthTokens } from '../../../../core/api/models';
 import { AuthApiService } from '../../../../core/auth/auth-api.service';
 import { AuthStoreService } from '../../../../core/auth/auth-store.service';
-import { ThemeToggleComponent } from '../../../../shared/ui/theme-toggle/theme-toggle.component';
+import { ThemeToggleComponent } from '../../../../shared/components/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'login-page',
