@@ -8,10 +8,15 @@ intent → spec → plan → build → review.
 
 ## Állapot
 
-Az app váza létezik (`apps/web`, `apps/api`, `contracts/openapi.json`). Az első feature
-(`0001-peer-review-forms`: kollégák értékelése űrlapokkal) elkészült és átment a teljes
-láncon. A lenti parancsok működnek; ha egy parancs mégsem létezik, mondd meg, ne találj ki
-helyette másikat.
+Az app váza létezik (`apps/web`, `apps/api`, `contracts/openapi.json`). Kész és a teljes
+láncon átment változások:
+
+- `0001-peer-review-forms` — kollégák értékelése űrlapokkal
+- `0004-ui-design` — PrimeNG-alapú, reszponzív felület
+- `0005-angular-refactor` — feature-first Angular-struktúra, service-réteg, Signal Forms
+
+A `0002-jira-user-import` és a `0003-jira-team-dashboard` specje még Draft. A lenti
+parancsok működnek; ha egy parancs mégsem létezik, mondd meg, ne találj ki helyette másikat.
 
 ## Stack
 
@@ -99,3 +104,10 @@ hogy kihagyod a korábbi lépéseket.
 ## Tipikus hibák
 
 <!-- Soronként egy visszatérő agent-hiba és a javítása. Röviden. -->
+
+- Friss worktree-ben a build elhasal (`Cannot find module './core/api/...'`) → előbb `npm ci`, majd `npm run api:client -w apps/web`; a generált kliens gitignore-olt.
+- Lépés commitolása piros check mellett → commit csak zöld `npm run check` után.
+- Spec vagy plan `Approved`-ra állítása, mielőtt az ember elolvasta → mutasd meg a fájlt, és várd meg az explicit OK-t.
+- Build vagy scaffold indítása jóváhagyás nélkül → a „kezdheted” csak az épp megbeszélt lépésre vonatkozik.
+- `rxResource`-os komponens tesztje: a kérés csak change detection után indul → `fixture.detectChanges()` az `expectOne` előtt.
+- `springdoc.*` pretty-print beállítások az `application.yml`-ben hatástalanok → ne próbáld újra, az `openapi.json` egysoros marad.
