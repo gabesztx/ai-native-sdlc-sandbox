@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.*
+
+apps/web/dist/
+apps/web/.angular/
+apps/web/coverage/
+apps/web/src/app/api/
+
+apps/api/target/
+apps/api/data/*
+!apps/api/data/.gitkeep
+
+.DS_Store

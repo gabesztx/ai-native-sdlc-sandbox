@@ -1,0 +1,15 @@
+{
+  "name": "hugo-feature-request-board",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "check": "npm run check:web && npm run check:api",
+    "check:web": "npm run api:client -w apps/web && npm run lint -w apps/web && npm test -w apps/web && npm run build -w apps/web",
+    "check:api": "cd apps/api && ./mvnw -q verify",
+    "dev:web": "npm start -w apps/web",
+    "dev:api": "cd apps/api && ./mvnw spring-boot:run",
+    "contract:update": "cd apps/api && ./mvnw -q test -Dtest=OpenApiContractTest -Dcontract.update=true"
+  }
+}
