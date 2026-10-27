@@ -8,8 +8,9 @@ intent → spec → plan → build → review.
 
 ## Állapot
 
-Az app váza létezik (`apps/web`, `apps/api`, `contracts/openapi.json`), feature-kód még
-nincs. A lenti parancsok működnek; ha egy parancs mégsem létezik, mondd meg, ne találj ki
+Az app váza létezik (`apps/web`, `apps/api`, `contracts/openapi.json`). Az első feature
+(`0001-peer-review-forms`: kollégák értékelése űrlapokkal) elkészült és átment a teljes
+láncon. A lenti parancsok működnek; ha egy parancs mégsem létezik, mondd meg, ne találj ki
 helyette másikat.
 
 ## Stack
