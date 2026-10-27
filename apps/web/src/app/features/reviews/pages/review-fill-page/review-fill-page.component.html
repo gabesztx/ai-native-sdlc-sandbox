@@ -8,9 +8,11 @@
   @if (current.status === 'SUBMITTED') {
     <p-message severity="info" class="submitted">Ezt az értékelést már beküldted.</p-message>
   } @else {
-    <form class="fill" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <form class="fill" [formRoot]="fill" (submit)="onSubmit()">
       <div class="questions">
         @for (question of current.questions; track question.id; let i = $index) {
+          @let answer = fill.answers[i];
+          @let questionError = questionErrors()[question.id];
           <p-card class="question stagger-item">
             <fieldset>
               <legend>
@@ -22,12 +24,12 @@
               @if (question.type === 'SCALE') {
                 @if (useSelectButton(question)) {
                   <div class="scale">
-                    <p-selectbutton [options]="scaleOptions(question)" optionLabel="label" optionValue="value" [formControl]="answers.at(i)" />
+                    <p-selectbutton [options]="scaleOptions(question)" optionLabel="label" optionValue="value" [formField]="answer.scale" />
                   </div>
                 } @else {
                   <div class="scale-input">
                     <p-inputnumber
-                      [formControl]="answers.at(i)"
+                      [formField]="answer.scale"
                       [min]="question.scaleMin ?? undefined"
                       [max]="question.scaleMax ?? undefined"
                       [useGrouping]="false"
@@ -39,15 +41,14 @@
                 <textarea
                   pTextarea
                   [attr.aria-label]="question.text"
-                  [formControl]="answers.at(i)"
+                  [formField]="answer.text"
                   rows="3"
-                  maxlength="2000"
                   [fluid]="true"
                 ></textarea>
               }
-              @if (questionErrors()[question.id]) {
+              @if (questionError) {
                 <p-message severity="error" variant="simple" size="small" class="field-error">
-                  {{ questionErrors()[question.id] }}
+                  {{ questionError }}
                 </p-message>
               }
             </fieldset>

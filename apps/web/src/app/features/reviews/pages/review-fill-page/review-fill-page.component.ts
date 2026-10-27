@@ -1,14 +1,6 @@
-import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import {
-  AbstractControl,
-  FormArray,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { Component, DestroyRef, computed, inject, input, linkedSignal, numberAttribute, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { FormField, FormRoot, applyEach, form, maxLength, required, requiredError, validate } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { EMPTY, catchError, finalize, switchMap } from 'rxjs';
 import { MessageService } from 'primeng/api';
@@ -18,7 +10,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { Message } from 'primeng/message';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
-import { AnswerInput, Question, ReviewDetail } from '../../../../core/api/models';
+import { AnswerInput, Question } from '../../../../core/api/models';
 import { problemOf } from '../../../../core/http/problem-detail';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ReviewsService } from '../../services/reviews.service';
@@ -26,12 +18,18 @@ import { ReviewsService } from '../../services/reviews.service';
 const MAX_TEXT_LENGTH = 2000;
 const MAX_SELECT_BUTTON_VALUES = 11;
 
-type AnswerControl = FormControl<number | string | null>;
+interface AnswerDraft {
+  type: Question['type'];
+  required: boolean;
+  scale: number | null;
+  text: string;
+}
 
 @Component({
   selector: 'review-fill-page',
   imports: [
-    ReactiveFormsModule,
+    FormField,
+    FormRoot,
     ButtonDirective,
     ButtonIcon,
     ButtonLabel,
@@ -51,26 +49,27 @@ export class ReviewFillPageComponent {
   private destroyRef = inject(DestroyRef);
   private messages = inject(MessageService);
 
-  public id = input.required<string>();
-  public review = signal<ReviewDetail | null>(null);
-  public form = new FormGroup({ answers: new FormArray<AnswerControl>([]) });
+  public id = input.required({ transform: numberAttribute });
+  private loaded = toSignal(
+    toObservable(this.id).pipe(
+      switchMap((id) => this.reviewsService.get(id).pipe(catchError((e: unknown) => this.fail(e)))),
+    ),
+  );
+  public review = computed(() => this.loaded() ?? null);
+  private answers = linkedSignal(() => ({ answers: (this.review()?.questions ?? []).map(answerDraft) }));
+  public fill = form(this.answers, (path) => {
+    applyEach(path.answers, (answer) => {
+      required(answer.scale, { when: ({ valueOf }) => valueOf(answer.required) && valueOf(answer.type) === 'SCALE' });
+      maxLength(answer.text, MAX_TEXT_LENGTH);
+      validate(answer.text, ({ value, valueOf }) =>
+        valueOf(answer.required) && valueOf(answer.type) === 'TEXT' && !value().trim() ? requiredError() : undefined,
+      );
+    });
+  });
   public questionErrors = signal<Record<number, string>>({});
   public error = signal('');
   public submitting = signal(false);
   public loading = computed(() => this.review() === null && this.error() === '');
-
-  public constructor() {
-    toObservable(this.id)
-      .pipe(
-        switchMap((id) => this.reviewsService.get(Number(id)).pipe(catchError((e: unknown) => this.fail(e)))),
-        takeUntilDestroyed(),
-      )
-      .subscribe((review) => this.load(review));
-  }
-
-  public get answers(): FormArray<AnswerControl> {
-    return this.form.controls.answers;
-  }
 
   public scaleValues(question: Question): number[] {
     const min = question.scaleMin ?? 0;
@@ -91,8 +90,8 @@ export class ReviewFillPageComponent {
     if (!review || this.submitting()) {
       return;
     }
-    if (this.answers.invalid) {
-      this.answers.markAllAsTouched();
+    if (this.fill().invalid()) {
+      this.fill().markAsTouched();
       this.error.set('Töltsd ki a kötelező kérdéseket.');
       return;
     }
@@ -113,19 +112,13 @@ export class ReviewFillPageComponent {
       });
   }
 
-  private load(review: ReviewDetail): void {
-    this.review.set(review);
-    this.answers.clear();
-    review.questions.forEach((question) => this.answers.push(answerControl(question)));
-  }
-
   private toAnswers(questions: Question[]): AnswerInput[] {
     return questions.flatMap((question, index): AnswerInput[] => {
-      const value = this.answers.at(index).value;
+      const answer = this.answers().answers[index];
       if (question.type === 'SCALE') {
-        return value === null || value === '' ? [] : [{ questionId: question.id, scaleValue: Number(value) }];
+        return answer.scale === null ? [] : [{ questionId: question.id, scaleValue: answer.scale }];
       }
-      const text = typeof value === 'string' ? value.trim() : '';
+      const text = answer.text.trim();
       return text ? [{ questionId: question.id, textValue: text }] : [];
     });
   }
@@ -150,16 +143,8 @@ export class ReviewFillPageComponent {
   }
 }
 
-function answerControl(question: Question): AnswerControl {
-  if (question.type === 'SCALE') {
-    return new FormControl<number | string | null>(null, question.required ? [Validators.required] : []);
-  }
-  const validators = [Validators.maxLength(MAX_TEXT_LENGTH)];
-  return new FormControl<number | string | null>('', question.required ? [...validators, notBlank] : validators);
-}
-
-function notBlank(control: AbstractControl): ValidationErrors | null {
-  return typeof control.value === 'string' && control.value.trim() ? null : { required: true };
+function answerDraft(question: Question): AnswerDraft {
+  return { type: question.type, required: question.required, scale: null, text: '' };
 }
 
 function questionIdOf(key: string, sent: AnswerInput[]): number | null {
