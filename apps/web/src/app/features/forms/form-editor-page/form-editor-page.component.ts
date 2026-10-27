@@ -1,11 +1,29 @@
 import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
-import { EMPTY, catchError, filter, switchMap } from 'rxjs';
+import { EMPTY, catchError, filter, finalize, switchMap } from 'rxjs';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { InputNumber } from 'primeng/inputnumber';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Select } from 'primeng/select';
+import { Tag } from 'primeng/tag';
+import { ToggleSwitch } from 'primeng/toggleswitch';
 import { FormDetail, FormInput, Question } from '../../../api/models';
 import { problemOf } from '../../../core/http/problem-detail';
 import { TeamApiService } from '../../../core/team/team-api.service';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
+import { confirmDelete } from '../confirm-delete';
 import { FormsApiService } from '../forms-api.service';
 
 type QuestionType = Question['type'];
@@ -20,7 +38,20 @@ type QuestionGroup = FormGroup<{
 
 @Component({
   selector: 'form-editor-page',
-  imports: [ReactiveFormsModule],
+  imports: [
+    ReactiveFormsModule,
+    ButtonDirective,
+    ButtonIcon,
+    ButtonLabel,
+    Card,
+    InputNumber,
+    InputText,
+    Message,
+    Select,
+    Tag,
+    ToggleSwitch,
+    PageHeaderComponent,
+  ],
   templateUrl: './form-editor-page.component.html',
   styleUrl: './form-editor-page.component.scss',
 })
@@ -29,12 +60,16 @@ export class FormEditorPageComponent {
   private teamApi = inject(TeamApiService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private messages = inject(MessageService);
+  private confirmation = inject(ConfirmationService);
 
   public id = input<string>();
   public isEdit = computed(() => this.id() !== undefined);
   public members = toSignal(this.teamApi.list().pipe(catchError(() => EMPTY)), { initialValue: [] });
   public serverErrors = signal<Record<string, string>>({});
   public generalError = signal('');
+  public saving = signal(false);
+  public deleting = signal(false);
 
   public form = new FormGroup({
     topic: new FormControl('', {
@@ -71,7 +106,14 @@ export class FormEditorPageComponent {
     return this.serverErrors()[key] ?? '';
   }
 
+  public isInvalid(control: AbstractControl, errorKey: string): boolean {
+    return (control.invalid && control.touched) || this.error(errorKey) !== '';
+  }
+
   public onSave(): void {
+    if (this.saving()) {
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -81,26 +123,40 @@ export class FormEditorPageComponent {
     const request = id === undefined ? this.formsApi.create(body) : this.formsApi.update(Number(id), body);
     this.serverErrors.set({});
     this.generalError.set('');
+    this.saving.set(true);
     request
       .pipe(
         catchError((error: unknown) => this.showError(error)),
+        finalize(() => this.saving.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((detail) => void this.router.navigate(['/admin/forms', detail.id]));
+      .subscribe((detail) => {
+        this.messages.add({ severity: 'success', summary: 'Piszkozat mentve' });
+        void this.router.navigate(['/admin/forms', detail.id]);
+      });
   }
 
   public onDelete(): void {
     const id = this.id();
-    if (id === undefined || !window.confirm('Biztosan törlöd?')) {
+    if (id === undefined || this.deleting()) {
       return;
     }
+    confirmDelete(this.confirmation, () => this.delete(Number(id)));
+  }
+
+  private delete(id: number): void {
+    this.deleting.set(true);
     this.formsApi
-      .delete(Number(id))
+      .delete(id)
       .pipe(
         catchError((error: unknown) => this.showError(error)),
+        finalize(() => this.deleting.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(() => void this.router.navigateByUrl('/admin/forms'));
+      .subscribe(() => {
+        this.messages.add({ severity: 'success', summary: 'Piszkozat törölve' });
+        void this.router.navigateByUrl('/admin/forms');
+      });
   }
 
   private load(detail: FormDetail): void {
