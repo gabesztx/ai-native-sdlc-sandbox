@@ -9,7 +9,7 @@
     "check:web": "npm run api:client -w apps/web && npm run lint -w apps/web && npm test -w apps/web && npm run build -w apps/web",
     "check:api": "cd apps/api && ./mvnw -q verify",
     "dev:web": "npm start -w apps/web",
-    "dev:api": "cd apps/api && ./mvnw spring-boot:run",
+    "dev:api": "cd apps/api && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev",
     "contract:update": "cd apps/api && ./mvnw -q test -Dtest=OpenApiContractTest -Dcontract.update=true"
   }
 }

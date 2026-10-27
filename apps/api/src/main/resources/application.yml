@@ -6,7 +6,18 @@ spring:
     driver-class-name: org.sqlite.JDBC
     hikari:
       maximum-pool-size: 1
+  jackson:
+    deserialization:
+      accept-float-as-int: false
+    mapper:
+      allow-coercion-of-scalars: false
 
-springdoc:
-  writer-with-order-by-keys: true
-  writer-with-default-pretty-printer: true
+hugo:
+  admin:
+    email: ${HUGO_ADMIN_EMAIL:}
+    password: ${HUGO_ADMIN_PASSWORD:}
+
+# No springdoc.* section: writer-with-order-by-keys / writer-with-default-pretty-printer
+# had no effect on contracts/openapi.json in this Spring Boot / springdoc version, so they
+# were dropped rather than kept as dead config. The JSON content type for every endpoint
+# is set explicitly via @RequestMapping(produces = ...) on each controller instead.

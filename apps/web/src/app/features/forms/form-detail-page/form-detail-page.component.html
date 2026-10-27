@@ -1,0 +1,66 @@
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (detail(); as form) {
+  <div class="page-header">
+    <h1>{{ form.topic }}</h1>
+    <span class="status">{{ formStatusLabels[form.status] }}</span>
+  </div>
+  <p>Értékelt: <strong>{{ form.evaluatedMember.name }}</strong></p>
+
+  @if (form.status === 'DRAFT') {
+    <div class="actions">
+      <a class="edit" [routerLink]="['/admin/forms', form.id, 'edit']">Szerkesztés</a>
+      <button type="button" class="send" (click)="onSend()">Kiküldés</button>
+      <button type="button" class="delete" (click)="onDelete()">Törlés</button>
+    </div>
+  }
+
+  <h2>Kérdések</h2>
+  <ol class="questions">
+    @for (question of form.questions; track question.id) {
+      <li>
+        {{ question.text }}
+        @if (question.type === 'SCALE') {
+          <span class="hint">({{ question.scaleMin }}–{{ question.scaleMax }})</span>
+        }
+        @if (question.required) {
+          <span class="hint">kötelező</span>
+        }
+      </li>
+    }
+  </ol>
+
+  @if (form.status === 'SENT') {
+    <h2>Címzettek ({{ form.submittedCount }} / {{ form.recipientCount }})</h2>
+    <ul class="recipients">
+      @for (recipient of form.recipients; track recipient.member.id) {
+        <li class="recipient">
+          <span class="name">{{ recipient.member.name }}</span>
+          <span class="recipient-status">{{ reviewStatusLabels[recipient.status] }}</span>
+          @if (recipient.submittedAt) {
+            <span class="time">{{ recipient.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
+          }
+        </li>
+      }
+    </ul>
+
+    <h2>Beküldött válaszok</h2>
+    @for (response of responses(); track response.member.id) {
+      <section class="response">
+        <h3>
+          {{ response.member.name }}
+          <span class="time">{{ response.submittedAt | date: 'yyyy.MM.dd HH:mm' }}</span>
+        </h3>
+        <dl>
+          @for (answer of response.answers; track answer.questionId) {
+            <dt>{{ questionText(answer.questionId) }}</dt>
+            <dd class="answer">{{ answer.scaleValue ?? answer.textValue }}</dd>
+          }
+        </dl>
+      </section>
+    } @empty {
+      <p>Még senki nem küldte be.</p>
+    }
+  }
+}

@@ -1,0 +1,8 @@
+<h1>Csapattagok</h1>
+<ul class="member-list">
+  @for (member of members(); track member.id) {
+    <li class="member">{{ member.name }}</li>
+  } @empty {
+    <li class="empty">Nincs csapattag.</li>
+  }
+</ul>

@@ -21,7 +21,21 @@
           "type": "service"
         },
         "@schematics/angular:guard": {
-          "functional": true
+          "functional": true,
+          "typeSeparator": "."
+        },
+        "@schematics/angular:interceptor": {
+          "functional": true,
+          "typeSeparator": "."
+        },
+        "@schematics/angular:resolver": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:pipe": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:module": {
+          "typeSeparator": "."
         }
       },
       "root": "",
@@ -78,7 +92,10 @@
               "buildTarget": "web:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          }
         },
         "test": {
           "builder": "@angular/build:unit-test"

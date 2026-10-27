@@ -1,0 +1,36 @@
+<div class="page-header">
+  <h1>Űrlapok</h1>
+  <a class="primary" routerLink="/admin/forms/new">Új űrlap</a>
+</div>
+<table class="form-table">
+  <thead>
+    <tr>
+      <th scope="col">Fő téma</th>
+      <th scope="col">Értékelt</th>
+      <th scope="col">Állapot</th>
+      <th scope="col">Beküldve</th>
+      <th scope="col">Létrehozva</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (form of forms(); track form.id) {
+      <tr class="form-row">
+        <td><a [routerLink]="['/admin/forms', form.id]">{{ form.topic }}</a></td>
+        <td>{{ form.evaluatedMember.name }}</td>
+        <td class="status">{{ statusLabels[form.status] }}</td>
+        <td class="counts">
+          @if (form.status === 'SENT') {
+            {{ form.submittedCount }} / {{ form.recipientCount }}
+          } @else {
+            –
+          }
+        </td>
+        <td>{{ form.createdAt | date: 'yyyy.MM.dd HH:mm' }}</td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="5">Még nincs űrlap.</td>
+      </tr>
+    }
+  </tbody>
+</table>

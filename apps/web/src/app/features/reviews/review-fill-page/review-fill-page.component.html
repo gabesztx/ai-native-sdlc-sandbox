@@ -1,0 +1,45 @@
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (review(); as current) {
+  <h1>{{ current.topic }}</h1>
+  <p>Értékelt: <strong>{{ current.evaluatedMember.name }}</strong></p>
+
+  @if (current.status === 'SUBMITTED') {
+    <p class="submitted">Ezt az értékelést már beküldted.</p>
+  } @else {
+    <form class="fill" [formGroup]="form" (ngSubmit)="onSubmit()">
+      @for (question of current.questions; track question.id; let i = $index) {
+        <fieldset class="question">
+          <legend>
+            {{ question.text }}
+            @if (question.required) {
+              <span class="required">*</span>
+            }
+          </legend>
+          @if (question.type === 'SCALE') {
+            <div class="scale">
+              @for (value of scaleValues(question); track value) {
+                <label class="scale-option">
+                  <input type="radio" [name]="'q' + question.id" [value]="value" [formControl]="answers.at(i)" />
+                  {{ value }}
+                </label>
+              }
+            </div>
+          } @else {
+            <textarea
+              [attr.aria-label]="question.text"
+              [formControl]="answers.at(i)"
+              rows="3"
+              maxlength="2000"
+            ></textarea>
+          }
+          @if (questionErrors()[question.id]) {
+            <span class="field-error">{{ questionErrors()[question.id] }}</span>
+          }
+        </fieldset>
+      }
+      <button type="submit" class="submit">Beküldés</button>
+    </form>
+  }
+}
