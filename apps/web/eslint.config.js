@@ -63,6 +63,10 @@ module.exports = defineConfig([
           message: "Use input() / output() instead of @Input() / @Output().",
         },
         {
+          selector: "MemberExpression[object.name='ChangeDetectionStrategy'][property.name='Eager']",
+          message: "OnPush is required; do not use Eager change detection.",
+        },
+        {
           selector: "Property[key.name='standalone'][value.value=true]",
           message: "standalone: true is the default; do not write it.",
         },

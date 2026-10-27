@@ -10,6 +10,15 @@ mintát, könyvtárat vagy struktúrát.
 Angular 22, TypeScript strict, SCSS, RxJS 7.2+, Vitest. **Zoneless**: nincs `zone.js`;
 az állapotváltozást signal jelzi, nem `setTimeout` vagy manuális change detection.
 
+## Angular CLI
+
+- Új Angular-elemet mindig az Angular CLI-vel hozz létre, ne kézzel:
+  `npx ng generate component features/<feature>/<nev>` (ugyanígy `service`, `guard`,
+  `pipe`, `directive`). A parancsot az `apps/web` mappában futtasd.
+- Angular-csomag hozzáadása: `npx ng add <csomag>`; frissítés: `npx ng update`.
+- Az `angular.json` sémabeállításai miatt a generált komponens már OnPush, SCSS és
+  `.component` fájlnevű; utána csak a szabályok szerinti tartalmat írd bele.
+
 ## Mappastruktúra
 
 ```
@@ -26,7 +35,8 @@ src/app/
 ## Komponensek
 
 - `standalone: true`-t ne írd ki (alapértelmezett). NgModule-t ne használj.
-- Mindig `ChangeDetectionStrategy.OnPush`.
+- Mindig OnPush. Angular 22-ben ez az alapértelmezett, ezért a CLI nem írja ki; nem is
+  kell kiírni. `ChangeDetectionStrategy.Eager` tilos.
 - Mindig külön fájlok: `.component.ts`, `.component.html`, `.component.scss`. Soha
   inline template vagy inline style.
 - `styleUrl` (egyes szám), nem `styleUrls`.
