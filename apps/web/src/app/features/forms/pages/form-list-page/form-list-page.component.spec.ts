@@ -1,5 +1,5 @@
-import { FormSummary } from '../../../core/api/models';
-import { createPage } from '../../../../testing/http-test-setup';
+import { FormSummary } from '../../../../core/api/models';
+import { createPage } from '../../../../../testing/http-test-setup';
 import { FormListPageComponent } from './form-list-page.component';
 
 describe('FormListPageComponent', () => {

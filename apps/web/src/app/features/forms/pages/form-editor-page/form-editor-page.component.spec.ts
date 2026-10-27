@@ -1,6 +1,6 @@
-import { TEAM, draftForm } from '../../../../testing/form-fixtures';
-import { createPage, setValue } from '../../../../testing/http-test-setup';
-import { chooseOption, confirmDialogButton, renderConfirmDialog } from '../../../../testing/primeng-helpers';
+import { TEAM, draftForm } from '../../../../../testing/form-fixtures';
+import { createPage, setValue } from '../../../../../testing/http-test-setup';
+import { chooseOption, confirmDialogButton, renderConfirmDialog } from '../../../../../testing/primeng-helpers';
 import { FormEditorPageComponent } from './form-editor-page.component';
 
 describe('FormEditorPageComponent', () => {

@@ -1,5 +1,5 @@
-import { PageHarness, createPage } from '../../../../testing/http-test-setup';
-import { pendingReview, reviewSummary } from '../../../../testing/review-fixtures';
+import { PageHarness, createPage } from '../../../../../testing/http-test-setup';
+import { pendingReview, reviewSummary } from '../../../../../testing/review-fixtures';
 import { ReviewFillPageComponent } from './review-fill-page.component';
 
 async function openPending(): Promise<PageHarness<ReviewFillPageComponent>> {

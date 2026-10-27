@@ -19,12 +19,12 @@ import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
-import { FormDetail, FormInput, Question } from '../../../core/api/models';
-import { problemOf } from '../../../core/http/problem-detail';
-import { TeamApiService } from '../../../core/team/team-api.service';
-import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
-import { confirmDelete } from '../confirm-delete';
-import { FormsApiService } from '../forms-api.service';
+import { FormDetail, FormInput, Question } from '../../../../core/api/models';
+import { problemOf } from '../../../../core/http/problem-detail';
+import { TeamApiService } from '../../../../core/team/team-api.service';
+import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
+import { confirmDelete } from '../../confirm-delete';
+import { FormsApiService } from '../../forms-api.service';
 
 type QuestionType = Question['type'];
 

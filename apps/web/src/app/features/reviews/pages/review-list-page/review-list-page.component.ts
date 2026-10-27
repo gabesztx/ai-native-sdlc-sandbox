@@ -6,12 +6,12 @@ import { catchError, of } from 'rxjs';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Skeleton } from 'primeng/skeleton';
-import { ReviewSummary } from '../../../core/api/models';
-import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
-import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
-import { StatTileComponent } from '../../../shared/ui/stat-tile/stat-tile.component';
-import { StatusTagComponent } from '../../../shared/ui/status-tag/status-tag.component';
-import { ReviewsApiService } from '../reviews-api.service';
+import { ReviewSummary } from '../../../../core/api/models';
+import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
+import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
+import { StatTileComponent } from '../../../../shared/ui/stat-tile/stat-tile.component';
+import { StatusTagComponent } from '../../../../shared/ui/status-tag/status-tag.component';
+import { ReviewsApiService } from '../../reviews-api.service';
 
 @Component({
   selector: 'review-list-page',

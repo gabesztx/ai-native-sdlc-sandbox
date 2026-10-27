@@ -12,13 +12,13 @@ import { ProgressBar } from 'primeng/progressbar';
 import { Skeleton } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
-import { FormDetail, FormResponse } from '../../../core/api/models';
-import { problemOf } from '../../../core/http/problem-detail';
-import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
-import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
-import { StatusTagComponent } from '../../../shared/ui/status-tag/status-tag.component';
-import { confirmDelete } from '../confirm-delete';
-import { FormsApiService } from '../forms-api.service';
+import { FormDetail, FormResponse } from '../../../../core/api/models';
+import { problemOf } from '../../../../core/http/problem-detail';
+import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
+import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
+import { StatusTagComponent } from '../../../../shared/ui/status-tag/status-tag.component';
+import { confirmDelete } from '../../confirm-delete';
+import { FormsApiService } from '../../forms-api.service';
 
 @Component({
   selector: 'form-detail-page',

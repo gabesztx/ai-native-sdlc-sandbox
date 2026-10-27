@@ -7,7 +7,7 @@ export const routes: Routes = [
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () =>
-      import('./features/auth/login-page/login-page.component').then((m) => m.LoginPageComponent),
+      import('./features/auth/pages/login-page/login-page.component').then((m) => m.LoginPageComponent),
   },
   {
     path: '',
@@ -20,35 +20,35 @@ export const routes: Routes = [
           {
             path: 'forms',
             loadComponent: () =>
-              import('./features/forms/form-list-page/form-list-page.component').then(
+              import('./features/forms/pages/form-list-page/form-list-page.component').then(
                 (m) => m.FormListPageComponent,
               ),
           },
           {
             path: 'forms/new',
             loadComponent: () =>
-              import('./features/forms/form-editor-page/form-editor-page.component').then(
+              import('./features/forms/pages/form-editor-page/form-editor-page.component').then(
                 (m) => m.FormEditorPageComponent,
               ),
           },
           {
             path: 'forms/:id',
             loadComponent: () =>
-              import('./features/forms/form-detail-page/form-detail-page.component').then(
+              import('./features/forms/pages/form-detail-page/form-detail-page.component').then(
                 (m) => m.FormDetailPageComponent,
               ),
           },
           {
             path: 'forms/:id/edit',
             loadComponent: () =>
-              import('./features/forms/form-editor-page/form-editor-page.component').then(
+              import('./features/forms/pages/form-editor-page/form-editor-page.component').then(
                 (m) => m.FormEditorPageComponent,
               ),
           },
           {
             path: 'team',
             loadComponent: () =>
-              import('./features/team/team-page/team-page.component').then((m) => m.TeamPageComponent),
+              import('./features/team/pages/team-page/team-page.component').then((m) => m.TeamPageComponent),
           },
           { path: '', pathMatch: 'full', redirectTo: 'forms' },
         ],
@@ -60,14 +60,14 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () =>
-              import('./features/reviews/review-list-page/review-list-page.component').then(
+              import('./features/reviews/pages/review-list-page/review-list-page.component').then(
                 (m) => m.ReviewListPageComponent,
               ),
           },
           {
             path: ':id',
             loadComponent: () =>
-              import('./features/reviews/review-fill-page/review-fill-page.component').then(
+              import('./features/reviews/pages/review-fill-page/review-fill-page.component').then(
                 (m) => m.ReviewFillPageComponent,
               ),
           },

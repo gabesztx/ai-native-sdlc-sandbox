@@ -1,5 +1,5 @@
-import { annasResponse, draftForm, sentForm } from '../../../../testing/form-fixtures';
-import { createPage } from '../../../../testing/http-test-setup';
+import { annasResponse, draftForm, sentForm } from '../../../../../testing/form-fixtures';
+import { createPage } from '../../../../../testing/http-test-setup';
 import { FormDetailPageComponent } from './form-detail-page.component';
 
 describe('FormDetailPageComponent', () => {

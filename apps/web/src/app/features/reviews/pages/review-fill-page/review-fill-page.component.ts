@@ -18,10 +18,10 @@ import { InputNumber } from 'primeng/inputnumber';
 import { Message } from 'primeng/message';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
-import { AnswerInput, Question, ReviewDetail } from '../../../core/api/models';
-import { problemOf } from '../../../core/http/problem-detail';
-import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
-import { ReviewsApiService } from '../reviews-api.service';
+import { AnswerInput, Question, ReviewDetail } from '../../../../core/api/models';
+import { problemOf } from '../../../../core/http/problem-detail';
+import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
+import { ReviewsApiService } from '../../reviews-api.service';
 
 const MAX_TEXT_LENGTH = 2000;
 const MAX_SELECT_BUTTON_VALUES = 11;

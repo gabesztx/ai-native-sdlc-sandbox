@@ -1,5 +1,5 @@
-import { createPage } from '../../../../testing/http-test-setup';
-import { reviewSummary } from '../../../../testing/review-fixtures';
+import { createPage } from '../../../../../testing/http-test-setup';
+import { reviewSummary } from '../../../../../testing/review-fixtures';
 import { ReviewListPageComponent } from './review-list-page.component';
 
 describe('ReviewListPageComponent', () => {

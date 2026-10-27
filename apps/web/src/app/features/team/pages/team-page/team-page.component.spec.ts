@@ -1,5 +1,5 @@
-import { TEAM } from '../../../../testing/form-fixtures';
-import { createPage } from '../../../../testing/http-test-setup';
+import { TEAM } from '../../../../../testing/form-fixtures';
+import { createPage } from '../../../../../testing/http-test-setup';
 import { TeamPageComponent } from './team-page.component';
 
 describe('TeamPageComponent', () => {
