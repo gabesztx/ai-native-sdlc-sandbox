@@ -105,4 +105,17 @@ class FormSendApiTest extends ApiTestSupport {
 				.andExpect(jsonPath("$.status").value("DRAFT"));
 	}
 
+	@Test
+	@DisplayName("AC16: kiküldéskor az inaktív importált tag nem kap kitöltést, csak az aktívak")
+	void sendSkipsInactiveImportedMembers() throws Exception {
+		insertMember("Minta Anna", true);
+		insertMember("Inaktív Ilona", false);
+		long formId = createForm(admin, evaluatedId, SCALE_AND_TEXT_QUESTIONS);
+
+		mvc.perform(post("/api/admin/forms/" + formId + "/send").header(HttpHeaders.AUTHORIZATION, bearer(admin)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.recipients", hasSize(1)))
+				.andExpect(jsonPath("$.recipients[0].member.name").value("Minta Anna"));
+	}
+
 }

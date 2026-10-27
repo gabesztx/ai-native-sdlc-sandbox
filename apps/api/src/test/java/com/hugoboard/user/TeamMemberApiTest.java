@@ -25,4 +25,22 @@ class TeamMemberApiTest extends ApiTestSupport {
 				.andExpect(jsonPath("$[0].id").isNumber());
 	}
 
+	@Test
+	@DisplayName("AC15: csak az aktív csapattagok jelennek meg, csak id és name mezővel")
+	void onlyActiveMembersAreListed() throws Exception {
+		insertMember("Teszt Elek", true);
+		insertMember("Inaktív Ilona", false);
+
+		mvc.perform(get("/api/auth/team-members"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].name").value("Teszt Elek"))
+				.andExpect(jsonPath("$[0].id").isNumber());
+
+		mvc.perform(get("/api/admin/team-members").header("Authorization", bearer(adminToken())))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].name").value("Teszt Elek"));
+	}
+
 }

@@ -16,6 +16,11 @@ hugo:
   admin:
     email: ${HUGO_ADMIN_EMAIL:}
     password: ${HUGO_ADMIN_PASSWORD:}
+  jira:
+    base-url: ${HUGO_JIRA_BASE_URL:}
+    email: ${HUGO_JIRA_EMAIL:}
+    api-token: ${HUGO_JIRA_API_TOKEN:}
+    board-id: ${HUGO_JIRA_BOARD_ID:}
 
 # No springdoc.* section: writer-with-order-by-keys / writer-with-default-pretty-printer
 # had no effect on contracts/openapi.json in this Spring Boot / springdoc version, so they

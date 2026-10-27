@@ -121,4 +121,12 @@ public abstract class ApiTestSupport {
 		return jdbc.sql("SELECT last_insert_rowid()").query(Long.class).single();
 	}
 
+	protected long insertMember(String name, boolean active) {
+		jdbc.sql("INSERT INTO team_member (name, active) VALUES (:name, :active)")
+				.param("name", name)
+				.param("active", active ? 1 : 0)
+				.update();
+		return jdbc.sql("SELECT last_insert_rowid()").query(Long.class).single();
+	}
+
 }
