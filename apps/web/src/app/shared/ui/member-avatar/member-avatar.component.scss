@@ -1,0 +1,10 @@
+:host {
+  display: inline-flex;
+  --p-avatar-background: var(--p-primary-100);
+  --p-avatar-color: var(--p-primary-700);
+}
+
+:host-context(.app-dark) {
+  --p-avatar-background: var(--p-primary-900);
+  --p-avatar-color: var(--p-primary-200);
+}

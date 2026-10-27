@@ -1,0 +1,10 @@
+<p-button
+  styleClass="theme-toggle"
+  severity="secondary"
+  [text]="true"
+  [rounded]="compact()"
+  [icon]="icon()"
+  [label]="compact() ? '' : label()"
+  [ariaLabel]="label()"
+  (onClick)="onToggle()"
+/>
