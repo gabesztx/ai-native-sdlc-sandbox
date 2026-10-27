@@ -1,0 +1,16 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-table {
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #d0d7de;
+  }
+}

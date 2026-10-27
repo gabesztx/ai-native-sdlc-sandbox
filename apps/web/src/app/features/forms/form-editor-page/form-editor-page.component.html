@@ -1,0 +1,66 @@
+<h1>{{ isEdit() ? 'Piszkozat szerkesztése' : 'Új űrlap' }}</h1>
+@if (generalError()) {
+  <p class="error" role="alert">{{ generalError() }}</p>
+}
+<form class="editor" [formGroup]="form" (ngSubmit)="onSave()">
+  <label for="topic">Fő téma</label>
+  <input id="topic" formControlName="topic" maxlength="200" />
+  @if (error('topic')) {
+    <span class="field-error">{{ error('topic') }}</span>
+  }
+
+  <label for="evaluated">Kit értékelnek?</label>
+  <select id="evaluated" formControlName="evaluatedMemberId">
+    <option [ngValue]="null" disabled>Válassz csapattagot</option>
+    @for (member of members(); track member.id) {
+      <option [ngValue]="member.id">{{ member.name }}</option>
+    }
+  </select>
+  @if (error('evaluatedMemberId')) {
+    <span class="field-error">{{ error('evaluatedMemberId') }}</span>
+  }
+
+  <h2>Kérdések</h2>
+  <ol class="questions" formArrayName="questions">
+    @for (question of questions.controls; track question; let i = $index) {
+      <li class="question" [formGroupName]="i">
+        <label [for]="'question-text-' + i">Kérdés szövege</label>
+        <input [id]="'question-text-' + i" formControlName="text" maxlength="500" />
+        @if (error('questions[' + i + '].text')) {
+          <span class="field-error">{{ error('questions[' + i + '].text') }}</span>
+        }
+        <span class="question-type">
+          {{ question.controls.type.value === 'SCALE' ? 'Skála' : 'Szabad szöveg' }}
+        </span>
+        @if (question.controls.type.value === 'SCALE') {
+          <div class="scale">
+            <label [for]="'scale-min-' + i">Legkisebb</label>
+            <input [id]="'scale-min-' + i" type="number" formControlName="scaleMin" />
+            <label [for]="'scale-max-' + i">Legnagyobb</label>
+            <input [id]="'scale-max-' + i" type="number" formControlName="scaleMax" />
+          </div>
+          @if (error('questions[' + i + '].scaleMin') || error('questions[' + i + '].scaleMax')) {
+            <span class="field-error">
+              {{ error('questions[' + i + '].scaleMin') || error('questions[' + i + '].scaleMax') }}
+            </span>
+          }
+        }
+        <label class="checkbox">
+          <input type="checkbox" formControlName="required" />
+          Kötelező
+        </label>
+        <button type="button" class="remove" (click)="onRemoveQuestion(i)">Kérdés törlése</button>
+      </li>
+    }
+  </ol>
+  <div class="actions">
+    <button type="button" class="add-scale" (click)="onAddQuestion('SCALE')">+ Skálás kérdés</button>
+    <button type="button" class="add-text" (click)="onAddQuestion('TEXT')">+ Szöveges kérdés</button>
+  </div>
+  <div class="actions">
+    <button type="submit" class="save">Mentés piszkozatként</button>
+    @if (isEdit()) {
+      <button type="button" class="delete" (click)="onDelete()">Törlés</button>
+    }
+  </div>
+</form>

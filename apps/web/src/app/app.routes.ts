@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { guestGuard, homeRedirectGuard } from './core/auth/auth.guard';
+import { authGuard, guestGuard, homeRedirectGuard } from './core/auth/auth.guard';
 import { ShellComponent } from './core/layout/shell/shell.component';
 
 export const routes: Routes = [
@@ -12,7 +12,49 @@ export const routes: Routes = [
   {
     path: '',
     component: ShellComponent,
-    children: [{ path: '', pathMatch: 'full', canActivate: [homeRedirectGuard], children: [] }],
+    children: [
+      {
+        path: 'admin',
+        canActivate: [authGuard('ADMIN')],
+        children: [
+          {
+            path: 'forms',
+            loadComponent: () =>
+              import('./features/forms/form-list-page/form-list-page.component').then(
+                (m) => m.FormListPageComponent,
+              ),
+          },
+          {
+            path: 'forms/new',
+            loadComponent: () =>
+              import('./features/forms/form-editor-page/form-editor-page.component').then(
+                (m) => m.FormEditorPageComponent,
+              ),
+          },
+          {
+            path: 'forms/:id',
+            loadComponent: () =>
+              import('./features/forms/form-detail-page/form-detail-page.component').then(
+                (m) => m.FormDetailPageComponent,
+              ),
+          },
+          {
+            path: 'forms/:id/edit',
+            loadComponent: () =>
+              import('./features/forms/form-editor-page/form-editor-page.component').then(
+                (m) => m.FormEditorPageComponent,
+              ),
+          },
+          {
+            path: 'team',
+            loadComponent: () =>
+              import('./features/team/team-page/team-page.component').then((m) => m.TeamPageComponent),
+          },
+          { path: '', pathMatch: 'full', redirectTo: 'forms' },
+        ],
+      },
+      { path: '', pathMatch: 'full', canActivate: [homeRedirectGuard], children: [] },
+    ],
   },
   { path: '**', redirectTo: '' },
 ];
