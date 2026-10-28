@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormField, FormRoot, form, required } from '@angular/forms/signals';
+import { FieldTree, FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { EMPTY, catchError, finalize } from 'rxjs';
 import { Button } from 'primeng/button';
@@ -42,6 +42,10 @@ export class LoginPageComponent {
   public memberForm = form(this.memberModel, (path) => {
     required(path.memberId);
   });
+
+  public isInvalid<T>(field: FieldTree<T>): boolean {
+    return field().invalid() && field().touched();
+  }
 
   public onAdminLogin(): void {
     if (this.adminLoading()) {

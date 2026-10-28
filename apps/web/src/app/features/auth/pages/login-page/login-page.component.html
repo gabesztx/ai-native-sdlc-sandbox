@@ -20,7 +20,7 @@
         optionValue="id"
         [options]="members()"
         [fluid]="true"
-        [class.p-invalid]="false"
+        [class.p-invalid]="isInvalid(memberForm.memberId) || memberError() !== ''"
       />
       @if (memberError(); as message) {
         <p-message severity="error" class="error">{{ message }}</p-message>
@@ -39,7 +39,15 @@
     <form class="login-form admin-login" [formRoot]="adminForm" (submit)="onAdminLogin()">
       <h2><i class="pi pi-shield" aria-hidden="true"></i> Admin belépés</h2>
       <label for="admin-email">E-mail cím</label>
-      <input pInputText id="admin-email" type="email" [formField]="adminForm.email" autocomplete="username" [fluid]="true" [class.p-invalid]="false" />
+      <input
+        pInputText
+        id="admin-email"
+        type="email"
+        [formField]="adminForm.email"
+        autocomplete="username"
+        [fluid]="true"
+        [class.p-invalid]="isInvalid(adminForm.email) || adminError() !== ''"
+      />
       <label for="admin-password">Jelszó</label>
       <input
         pInputText
@@ -48,7 +56,7 @@
         [formField]="adminForm.password"
         autocomplete="current-password"
         [fluid]="true"
-        [class.p-invalid]="false"
+        [class.p-invalid]="isInvalid(adminForm.password) || adminError() !== ''"
       />
       @if (adminError(); as message) {
         <p-message severity="error" class="error">{{ message }}</p-message>
@@ -57,7 +65,6 @@
         type="submit"
         label="Belépés adminként"
         icon="pi pi-sign-in"
-        severity="secondary"
         [fluid]="true"
         [loading]="adminLoading()"
       />

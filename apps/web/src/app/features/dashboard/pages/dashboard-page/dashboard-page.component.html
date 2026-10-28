@@ -23,11 +23,12 @@
           type="button"
           class="tile stagger-item"
           [class.active]="selectedTile() === def.tile"
+          [style.--tile-accent]="def.accent"
           (click)="selectTile(def.tile)"
         >
           <p-card>
             <div class="tile-content">
-              <i [class]="def.icon" aria-hidden="true"></i>
+              <span class="tile-icon"><i [class]="def.icon" aria-hidden="true"></i></span>
               <span class="tile-value">{{ def.value(dash.kpis) }}{{ def.tile === 'DONE' ? '%' : '' }}</span>
               <span class="tile-label">{{ def.label }}</span>
             </div>
