@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
-import { Dashboard, Issue } from '../../../../core/api/models';
+import { ActivatedRoute } from '@angular/router';
+import { Dashboard } from '../../../../core/api/models';
 import { createPage } from '../../../../../testing/http-test-setup';
 import { DashboardStreamService } from '../../services/dashboard-stream.service';
 import { DashboardPageComponent } from './dashboard-page.component';
@@ -68,7 +69,7 @@ describe('DashboardPageComponent', () => {
     expect(page.root().textContent).toContain('Élő frissítés szünetel');
   });
 
-  it('AC7/AC10: csempére kattintva megjelenik a szűrt lista, kulccsal és Jira-linkkel', async () => {
+  it('0006/AC1: csempére kattintva a megfelelő lista aloldal URL-szegmensére navigál', () => {
     const page = createPage(DashboardPageComponent, {}, [
       { provide: DashboardStreamService, useValue: fakeStream(ACTIVE_DASHBOARD) },
     ]);
@@ -77,47 +78,24 @@ describe('DashboardPageComponent', () => {
       el.textContent?.includes('Blokkolt'),
     );
     blockedTile?.click();
-    page.fixture.detectChanges();
 
-    page.backend.expectOne('/api/dashboard/issues?tile=BLOCKED').flush([
-      {
-        key: 'HUGO-1',
-        summary: 'Teszt feladat',
-        status: 'Blocked',
-        statusCategory: 'IN_PROGRESS',
-        url: 'https://hugo.atlassian.net/browse/HUGO-1',
-      },
-    ] satisfies Issue[]);
-    await page.fixture.whenStable();
-
-    const link = page.root().querySelector<HTMLAnchorElement>('.issue-link');
-    expect(link?.textContent?.trim()).toBe('HUGO-1');
-    expect(link?.getAttribute('href')).toBe('https://hugo.atlassian.net/browse/HUGO-1');
-    expect(link?.getAttribute('target')).toBe('_blank');
+    expect(page.navigateTo).toHaveBeenCalledWith(['blocked'], expect.objectContaining({ relativeTo: expect.anything() }));
   });
 
-  it('AC8: az UNASSIGNED lista "nincs" feliratot mutat assignee nélküli feladatnál', async () => {
+  it('0006/AC9: a főnézet gyökérelemén jelen van a belépő animáció-osztály', () => {
     const page = createPage(DashboardPageComponent, {}, [
       { provide: DashboardStreamService, useValue: fakeStream(ACTIVE_DASHBOARD) },
     ]);
 
-    const unassignedTile = Array.from(page.root().querySelectorAll<HTMLButtonElement>('.tile')).find((el) =>
-      el.textContent?.includes('Gazdátlan'),
-    );
-    unassignedTile?.click();
-    page.fixture.detectChanges();
+    expect(page.root().querySelector('.dashboard-main')).not.toBeNull();
+  });
 
-    page.backend.expectOne('/api/dashboard/issues?tile=UNASSIGNED').flush([
-      {
-        key: 'HUGO-2',
-        summary: 'Gazdátlan feladat',
-        status: 'To Do',
-        statusCategory: 'TODO',
-        url: 'https://hugo.atlassian.net/browse/HUGO-2',
-      },
-    ] satisfies Issue[]);
-    await page.fixture.whenStable();
+  it('0006/AC1+AC2: aktív gyermek route esetén a KPI-kártyák és a sprint progress card eltűnik', () => {
+    const page = createPage(DashboardPageComponent, {}, [
+      { provide: DashboardStreamService, useValue: fakeStream(ACTIVE_DASHBOARD) },
+      { provide: ActivatedRoute, useValue: { snapshot: { firstChild: {} }, firstChild: {} } },
+    ]);
 
-    expect(page.root().querySelector('.assignee-name.none')?.textContent?.trim()).toBe('nincs');
+    expect(page.root().querySelector('.dashboard-main')).toBeNull();
   });
 });

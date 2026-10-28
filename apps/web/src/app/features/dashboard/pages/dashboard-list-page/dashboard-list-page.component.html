@@ -1,0 +1,38 @@
+@if (tile()) {
+  <page-header [title]="tileLabel()" subtitle="Szűrt feladatlista">
+    <button type="button" class="back-button" (click)="goBack()">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+      Vissza
+    </button>
+  </page-header>
+
+  <ul class="issue-list">
+    @if (issuesLoading()) {
+      @for (row of [1, 2, 3]; track row) {
+        <li><p-skeleton height="5rem" /></li>
+      }
+    } @else {
+      @for (issue of issues(); track issue.key) {
+        <li class="issue-card stagger-item">
+          <p-card>
+            <div class="issue-header">
+              <a class="issue-link" [href]="issue.url" target="_blank" rel="noopener">{{ issue.key }}</a>
+              <p-tag [value]="issue.status" [severity]="issueSeverity(issue)" />
+            </div>
+            <p class="issue-summary">{{ issue.summary }}</p>
+            <div class="issue-footer">
+              @if (issue.assignee; as assignee) {
+                <member-avatar [name]="assignee.name" />
+                <span class="assignee-name">{{ assignee.name }}</span>
+              } @else {
+                <span class="assignee-name none">nincs</span>
+              }
+            </div>
+          </p-card>
+        </li>
+      } @empty {
+        <li class="empty"><empty-state icon="pi pi-inbox" message="Nincs ide tartozó feladat." /></li>
+      }
+    }
+  </ul>
+}

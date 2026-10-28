@@ -1,76 +1,50 @@
-<page-header title="Dashboard" subtitle="A HUGO - Board aktív sprintjének állapota." />
+@if (!hasChildRoute()) {
+  <div class="dashboard-main" animate.enter="fade-in-up" animate.leave="view-leave">
+    <page-header title="Dashboard" subtitle="A HUGO - Board aktív sprintjének állapota." />
 
-@if (!loading() && !connected()) {
-  <p class="live-paused" role="status">Élő frissítés szünetel</p>
-}
+    @if (!loading() && !connected()) {
+      <p class="live-paused" role="status">Élő frissítés szünetel</p>
+    }
 
-@if (loading()) {
-  <div class="tile-row">
-    @for (row of [1, 2, 3, 4, 5]; track row) {
-      <p-skeleton class="tile-skeleton" height="6rem" />
+    @if (loading()) {
+      <div class="tile-row">
+        @for (row of [1, 2, 3, 4, 5]; track row) {
+          <p-skeleton class="tile-skeleton" height="6rem" />
+        }
+      </div>
+    } @else if (unavailable()) {
+      <empty-state icon="pi pi-cloud" message="Az adatok nem érhetők el." />
+    } @else if (noActiveSprint()) {
+      <empty-state icon="pi pi-calendar-times" message="Nincs aktív sprint." />
+    } @else {
+      @let dash = dashboard();
+      @if (dash) {
+        <div class="tile-row">
+          @for (def of tiles; track def.tile) {
+            <button type="button" class="tile stagger-item" [style.--tile-accent]="def.accent" (click)="selectTile(def.tile)">
+              <p-card>
+                <div class="tile-content">
+                  <span class="tile-icon"><i [class]="def.icon" aria-hidden="true"></i></span>
+                  <span class="tile-value">{{ def.value(dash.kpis) }}{{ def.tile === 'DONE' ? '%' : '' }}</span>
+                  <span class="tile-label">{{ def.label }}</span>
+                </div>
+              </p-card>
+            </button>
+          }
+        </div>
+
+        @if (dash.sprint; as sprint) {
+          <p-card class="progress-card">
+            <div class="progress-header">
+              <span class="sprint-name">{{ sprint.name }}</span>
+              <span class="sprint-days">{{ sprint.daysRemaining }} nap hátra</span>
+            </div>
+            <p-progressbar [value]="sprint.elapsedPercent" [showValue]="false" />
+          </p-card>
+        }
+      }
     }
   </div>
-} @else if (unavailable()) {
-  <empty-state icon="pi pi-cloud" message="Az adatok nem érhetők el." />
-} @else if (noActiveSprint()) {
-  <empty-state icon="pi pi-calendar-times" message="Nincs aktív sprint." />
-} @else {
-  @let dash = dashboard();
-  @if (dash) {
-    <div class="tile-row">
-      @for (def of tiles; track def.tile) {
-        <button
-          type="button"
-          class="tile stagger-item"
-          [class.active]="selectedTile() === def.tile"
-          [style.--tile-accent]="def.accent"
-          (click)="selectTile(def.tile)"
-        >
-          <p-card>
-            <div class="tile-content">
-              <span class="tile-icon"><i [class]="def.icon" aria-hidden="true"></i></span>
-              <span class="tile-value">{{ def.value(dash.kpis) }}{{ def.tile === 'DONE' ? '%' : '' }}</span>
-              <span class="tile-label">{{ def.label }}</span>
-            </div>
-          </p-card>
-        </button>
-      }
-    </div>
-
-    @if (dash.sprint; as sprint) {
-      <p-card class="progress-card">
-        <div class="progress-header">
-          <span class="sprint-name">{{ sprint.name }}</span>
-          <span class="sprint-days">{{ sprint.daysRemaining }} nap hátra</span>
-        </div>
-        <p-progressbar [value]="sprint.elapsedPercent" [showValue]="false" />
-      </p-card>
-    }
-
-    @if (selectedTile(); as tile) {
-      <ul class="issue-list">
-        @if (issuesLoading()) {
-          @for (row of [1, 2, 3]; track row) {
-            <li><p-skeleton height="3rem" /></li>
-          }
-        } @else {
-          @for (issue of issues(); track issue.key) {
-            <li class="issue-row">
-              <a class="issue-link" [href]="issue.url" target="_blank" rel="noopener">{{ issue.key }}</a>
-              <span class="issue-summary">{{ issue.summary }}</span>
-              <p-tag [value]="issue.status" [severity]="issueSeverity(issue)" />
-              @if (issue.assignee; as assignee) {
-                <member-avatar [name]="assignee.name" />
-                <span class="assignee-name">{{ assignee.name }}</span>
-              } @else {
-                <span class="assignee-name none">nincs</span>
-              }
-            </li>
-          } @empty {
-            <li class="empty"><empty-state icon="pi pi-inbox" message="Nincs ide tartozó feladat." /></li>
-          }
-        }
-      </ul>
-    }
-  }
 }
+
+<router-outlet />

@@ -24,6 +24,13 @@ $stagger-limit: 10;
   }
 }
 
+@keyframes fade-out-down {
+  to {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
 @keyframes collapse-out {
   from {
     height: auto;
@@ -41,6 +48,10 @@ $stagger-limit: 10;
 
 .fade-in-up {
   animation: fade-in-up $duration-slow $easing-standard both;
+}
+
+.view-leave {
+  animation: fade-out-down $duration-base $easing-standard both;
 }
 
 .collapse-out {
